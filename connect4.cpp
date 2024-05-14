@@ -10,13 +10,14 @@ unsigned int NUM_COL = 7;
 unsigned int NUM_ROW = 6;
 
 const int EMPTY = 0;
-const int YELLOW = 1;
-const int RED = 2;
-
-const int PLAYER = 0;
-const int AI = 1;
+const int PLAYER = 1;
+const int AI = 2;
 
 vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
+bool gameOver;
+int currentPlayer;
+int turns;
+
 void init_board()
 {
     cout << "  ____                            _     _____                \n";
@@ -50,12 +51,12 @@ void draw_board(vector<vector<int>> &board)
             case EMPTY:
                 cout << " ";
                 break;
-            case YELLOW:
+            case PLAYER:
                 cout << "\x1b[33m";
                 cout << "O";
                 cout << "\x1b[0m";
                 break;
-            case RED:
+            case AI:
                 cout << "\x1b[31m";
                 cout << "O";
                 cout << "\x1b[0m";
@@ -76,24 +77,117 @@ void draw_board(vector<vector<int>> &board)
     }
     cout << endl;
 }
-
-void add_move(vector<vector<int>> &board, int move)
+void add_move(vector<vector<int>> &board, int move, int currentPlayer)
 {
     for (int row = 0; row < NUM_ROW; row++)
     {
         if (board[row][move - 1] == EMPTY)
         {
-            board[row][move - 1] = RED;
+            board[row][move - 1] = currentPlayer;
             break;
         }
     }
 }
+bool detect_win(vector<vector<int>> &board)
+{
+    int count;
+    int last_column = NUM_COL - 1;
+    int last_row = NUM_ROW - 1;
+
+    // check horizontal win
+    for (int row = 0; row < NUM_ROW; row++)
+    {
+        count = 1;
+        for (int col = 0; col < last_column; col++)
+        {
+            if (count == 4)
+            {
+                return true;
+            }
+            if (board[row][col] != EMPTY && board[row][col] == board[row][col + 1])
+            {
+                count++;
+            }
+            else
+            {
+                count = 1;
+            }
+        }
+    }
+
+    // check vertical win
+    for (int col = 0; col < NUM_COL; col++)
+    {
+        count = 1;
+        for (int row = 0; row < last_row; row++)
+        {
+            if (count == 4)
+            {
+                return true;
+            }
+            if (board[row][col] != EMPTY && board[row][col] == board[row + 1][col])
+            {
+                count++;
+            }
+            else
+            {
+                count = 1;
+            }
+        }
+    }
+    // check diagonal win
+    for (int col = 0; col < last_column; col++)
+    {
+        count = 1;
+        for (int row = 0; row < last_row; row++)
+        {
+            if (count == 4)
+            {
+                return true;
+            }
+            if (board[row][col] != EMPTY && board[row][col] == board[row + 1][col + 1])
+            {
+                count++;
+            }
+            else
+            {
+                count = 1;
+            }
+        }
+    }
+    for (int col = last_column; col > 0; col--)
+    {
+        count = 1;
+        for (int row = last_row; row > 0; row--)
+        {
+            if (count == 4)
+            {
+                return true;
+            }
+            if (board[row][col] != EMPTY && board[row][col] == board[row - 1][col - 1])
+            {
+                count++;
+            }
+            else
+            {
+                count = 1;
+            }
+        }
+    }
+
+    return false;
+}
 void play_game()
 {
+    gameOver = false;
     draw_board(board); // draw empty board
     int move = -1;
-    while (true)
+    currentPlayer = PLAYER;
+    turns = 1;
+
+    while (!gameOver)
     {
+
         cout << endl;
         cout << "\t- Your turn! -";
         cout << endl;
@@ -125,15 +219,30 @@ void play_game()
             cout << endl
                  << endl;
         }
-        add_move(board, move);
-
+        add_move(board, move, currentPlayer);
         draw_board(board);
+        gameOver = detect_win(board);
+        if (!gameOver)
+        {
+            currentPlayer = (currentPlayer == PLAYER) ? AI : PLAYER;
+        }
+        turns++;
+    }
+    if (currentPlayer == PLAYER)
+    {
+
+        cout << "You won!";
+        cout << endl;
+    }
+    else
+    {
+        cout << "You lost!";
+        cout << endl;
     }
 }
 
 int main()
 {
-
     init_board();
     play_game();
     return 0;

@@ -197,9 +197,50 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
 
     return -1;
 }
+/*
+ * Evaluates the position of the board
+ * @param board - the board to evaluate
+ * @param currentPlayer - the player who has to move
+ * @return - a score based on how good or bad the position is
+ */
+int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
+{
 
-pair<int,int> minimax(vector<vector<int>> &board,int depth,int alpha, int beta,bool maximizingPlayer){
+    // per ogni colonna conto quanti pezzi sono allineati, se sono del giocatore -> bonus, altrimenti malus
+    // per ogni riga conto quanti pezzi sono allineati, se sono del giocatore -> bonus, altrimenti malus
+    // per ogni diagonale conto quanti pezzi sono allineati, se sono del giocatore -> bonus, altrimenti malus
+    // si preferisce mettere pezzi nelle colonne centrali
 
+    int score = 0;
+    int last_column = NUM_COL - 3;
+    int last_row = NUM_ROW - 3;
+    int count = 0;
+
+    for (int row = 0; row < NUM_ROW; row++)
+    {
+        count = 0;
+        for (int col = 0; col < last_column; col++)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (board[row][col] == board[row][col + i])
+                {
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+            }
+            count = 0;
+        }
+    }
+
+    return score;
+}
+
+pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int beta, bool maximizingPlayer)
+{
 }
 
 void play_game()
@@ -232,7 +273,7 @@ void play_game()
 
                 cout << "Please insert a number between 1 and 7";
             }
-            else if (board[NUM_ROW - 1][move - 1] != EMPTY) //column full
+            else if (board[NUM_ROW - 1][move - 1] != EMPTY) // column full
             {
                 cout << "Column full!";
             }

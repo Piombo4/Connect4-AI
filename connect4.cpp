@@ -14,6 +14,8 @@ const int PLAYER = 1;
 const int AI = 2;
 const int DRAW = 3;
 
+unsigned int MAX_DEPTH = 5;
+
 vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
 int gameOver;
 int currentPlayer;
@@ -78,16 +80,17 @@ void draw_board(vector<vector<int>> &board)
     }
     cout << endl;
 }
-void add_move(vector<vector<int>> &board, int move, int currentPlayer)
+int add_move(vector<vector<int>> &board, int move, int currentPlayer)
 {
     for (int row = 0; row < NUM_ROW; row++)
     {
         if (board[row][move - 1] == EMPTY)
         {
             board[row][move - 1] = currentPlayer;
-            break;
+            return row;
         }
     }
+    return -1;
 }
 int check_end(vector<vector<int>> &board, int currentPlayer)
 {
@@ -197,6 +200,30 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
 
     return -1;
 }
+int evaluateLine(int countPlayer, int countOpponent, int empty)
+{
+    if (countPlayer == 4) // winning move
+    {
+        return 1000;
+    }
+    else if (countPlayer == 3 && countOpponent == 0) // three in a row
+    {
+        return 500;
+    }
+    else if (countPlayer == 2 && countOpponent == 0)
+    { // 2 in a row
+        return 100;
+    }
+    else if (countOpponent == 3 && empty == 1)
+    {
+        return -500;
+    }
+    else if (countOpponent == 2 && empty == 2)
+    {
+        return -100;
+    }
+    return 0;
+}
 /*
  * Evaluates the position of the board
  * @param board - the board to evaluate
@@ -206,84 +233,272 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
 int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
 {
 
-    // per ogni colonna conto quanti pezzi sono allineati, se sono del giocatore -> bonus, altrimenti malus
-    // per ogni riga conto quanti pezzi sono allineati, se sono del giocatore -> bonus, altrimenti malus
-    // per ogni diagonale conto quanti pezzi sono allineati, se sono del giocatore -> bonus, altrimenti malus
-    // si preferisce mettere pezzi nelle colonne centrali
-
     int score = 0;
     int last_column = NUM_COL - 3;
     int last_row = NUM_ROW - 3;
-    int count = 0;
+    int countPlayer = 0;
+    int countOpponent = 0;
+    int empty = 0;
 
     for (int row = 0; row < NUM_ROW; row++)
     {
-        count = 0;
+        countPlayer = 0;
+        countOpponent = 0;
+        empty = 0;
         for (int col = 0; col < last_column; col++)
         {
             for (int i = 0; i < 4; i++)
             {
-                if (board[row][col] == board[row][col + i])
+                if (board[row][col + i] == currentPlayer)
                 {
-                    count++;
+                    countPlayer++;
+                }
+                else if (board[row][col + i] != EMPTY)
+                {
+                    countOpponent++;
                 }
                 else
                 {
-                    count = 0;
+                    empty++;
                 }
             }
-            count = 0;
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
+            score += evaluateLine(countPlayer, countOpponent, empty);
+        }
+    }
+
+    for (int col = 0; col < NUM_COL; col++)
+    {
+        countPlayer = 0;
+        countOpponent = 0;
+        empty = 0;
+        for (int row = 0; row < last_row; row++)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (board[row + i][col] == currentPlayer)
+                {
+                    countPlayer++;
+                }
+                else if (board[row + i][col] != EMPTY)
+                {
+                    countOpponent++;
+                }
+                else
+                {
+                    empty++;
+                }
+            }
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
+            score += evaluateLine(countPlayer, countOpponent, empty);
+        }
+    }
+
+    for (unsigned int c = 0; c < NUM_COL - 3; c++)
+    {
+        for (unsigned int r = 3; r < NUM_ROW; r++)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if ((unsigned int)board[r - i][c + i] == currentPlayer)
+                {
+                    countPlayer++;
+                    ;
+                }
+                else if ((unsigned int)board[r - i][c + i] != EMPTY)
+                {
+                    countOpponent++;
+                }
+                else
+                {
+                    empty++;
+                }
+            }
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
+            score += evaluateLine(countPlayer, countOpponent, empty);
+        }
+    }
+    for (unsigned int c = 0; c < NUM_COL - 3; c++)
+    {
+        for (unsigned int r = 0; r < NUM_ROW - 3; r++)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if ((unsigned int)board[r + i][c + i] == currentPlayer)
+                {
+                    countPlayer++;
+                    ;
+                }
+                else if ((unsigned int)board[r + i][c + i] != EMPTY)
+                {
+                    countOpponent++;
+                }
+                else
+                {
+                    empty++;
+                }
+            }
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
+            score += evaluateLine(countPlayer, countOpponent, empty);
         }
     }
 
     return score;
 }
 
-pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int beta, bool maximizingPlayer)
+/*
+ *   @param board - board to generate the next possible moves from
+ *   @return vector<int> - the columns where a piece placement is possible
+ */
+vector<int> generateMoves(vector<vector<int>> &board)
 {
+    vector<int> possibleMoves;
+    for (int col = 0; col < NUM_COL; col++)
+    {
+        for (int row = 0; row < NUM_ROW; row++)
+        {
+            if (board[row][col] == EMPTY)
+            {
+                possibleMoves.push_back(col);
+                break;
+            }
+        }
+    }
+    return possibleMoves;
 }
+vector<vector<int>> copyBoard(vector<vector<int>> board)
+{
+    return board;
+}
+/*
+ *
+ * @return - {score, column to place piece}
+ */
+pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int beta, int currentPlayer)
+{
 
+    vector<int> nextMoves = generateMoves(board);
+    pair<int, int> bestScore = {0, -1};
+    int currentScore;
+    if (nextMoves.size() == 0 || depth == 0)
+    {
+        return {evaluateBoard(board, currentPlayer), -1};
+    }
+    else
+    {
+        if (currentPlayer == AI)
+        {
+
+            pair<int, int> bestScore = {INT_MIN, -1};
+            for (int col = 0; col < nextMoves.size(); col++)
+            {
+                int row = add_move(board, col, currentPlayer);
+                ;
+                currentScore = minimax(board, depth - 1, alpha, beta, PLAYER).first;
+                if (currentScore > bestScore.first)
+                {
+                    bestScore = {currentScore, col};
+                }
+                alpha = max(alpha, bestScore.first);
+                board[row][col] = EMPTY;
+                if (alpha >= beta)
+                {
+                    break;
+                }
+            }
+            return bestScore;
+        }
+        else
+        {
+
+            pair<int, int> bestScore = {INT_MAX, -1};
+            for (int col = 0; col < nextMoves.size(); col++)
+            {
+
+                int row = add_move(board, col, currentPlayer);
+
+                currentScore = minimax(board, depth - 1, alpha, beta, AI).first;
+                if (currentScore < bestScore.first)
+                {
+                    bestScore = {currentScore, col};
+                }
+                beta = min(beta, currentScore);
+                board[row][col] = EMPTY;
+                if (alpha >= beta)
+                {
+                    break;
+                }
+            }
+            return bestScore;
+        }
+    }
+}
+int userMove()
+{
+    int move;
+    cout << endl;
+    cout << "\t- Your turn! -";
+    cout << endl;
+
+    while (true)
+    {
+        cout << "Insert the column: ";
+        cin >> move;
+
+        if (!cin)
+        { // check non-integer values
+            cout << "Wrong";
+            cin.clear();
+            cin.ignore(INT_MAX, '\n');
+        }
+        else if ((unsigned int)move > NUM_COL || (unsigned int)move <= -0) // outside bounds
+        {
+
+            cout << "Please insert a number between 1 and 7";
+        }
+        else if (board[NUM_ROW - 1][move - 1] != EMPTY) // column full
+        {
+            cout << "Column full!";
+        }
+        else // valid input
+        {
+            break;
+        }
+        cout << endl
+             << endl;
+    }
+    return move;
+}
+int aiMove()
+{
+    cout << endl;
+    cout << "\t- AI turn... -";
+    cout << endl;
+    int move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI).first;
+    cout << endl;
+    cout << move;
+    cout << endl;
+    return move;
+}
 void play_game()
 {
     gameOver = -1;
     draw_board(board); // draw empty board
-    int move = -1;
     currentPlayer = PLAYER;
     turns = 1;
+    int move = -1;
 
     while (gameOver < 0)
     {
-        cout << endl;
-        cout << "\t- Your turn! -";
-        cout << endl;
-
-        while (true)
-        {
-            cout << "Insert the column: ";
-            cin >> move;
-
-            if (!cin)
-            { // check non-integer values
-                cout << "Wrong";
-                cin.clear();
-                cin.ignore(INT_MAX, '\n');
-            }
-            else if ((unsigned int)move > NUM_COL || (unsigned int)move <= -0) // outside bounds
-            {
-
-                cout << "Please insert a number between 1 and 7";
-            }
-            else if (board[NUM_ROW - 1][move - 1] != EMPTY) // column full
-            {
-                cout << "Column full!";
-            }
-            else // valid input
-            {
-                break;
-            }
-            cout << endl
-                 << endl;
-        }
+        move = currentPlayer == PLAYER ? userMove() : aiMove();
         add_move(board, move, currentPlayer);
         draw_board(board);
         gameOver = check_end(board, currentPlayer); // detect win or draw

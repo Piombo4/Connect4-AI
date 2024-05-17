@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <windows.h>
+#include <algorithm> 
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -19,6 +20,7 @@ const int DRAW = 3;
 unsigned int MAX_DEPTH = 8;
 
 vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
+vector<vector<int>> killerMoves(MAX_DEPTH, vector<int>(2));
 int gameOver;
 int currentPlayer;
 int turns;
@@ -142,7 +144,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
     // check horizontal win
     for (int row = 0; row < NUM_ROW; row++)
     {
-        
+
         for (int col = 0; col < NUM_COL - 3; col++)
         {
             count = 0;
@@ -154,7 +156,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-                   
+
                     break;
                 }
                 if (count == 4)
@@ -169,10 +171,10 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
     // check vertical win
     for (int col = 0; col < NUM_COL; col++)
     {
-       
+
         for (int row = 0; row < NUM_ROW - 3; row++)
         {
-           count = 0;
+            count = 0;
             for (int i = 0; i < 4; i++)
             {
                 if (board[row + i][col] == currentPlayer)
@@ -181,7 +183,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-                   
+
                     break;
                 }
                 if (count == 4)
@@ -199,7 +201,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
     {
         for (unsigned int r = 3; r < NUM_ROW; r++)
         {
-             count = 0;
+            count = 0;
             for (int i = 0; i < 4; i++)
             {
                 if ((unsigned int)board[r - i][c + i] == currentPlayer)
@@ -208,7 +210,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-                    
+
                     break;
                 }
                 if (count == 4)
@@ -218,7 +220,6 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                     return currentPlayer;
                 }
             }
-           
         }
     }
     for (unsigned int c = 0; c < NUM_COL - 3; c++)
@@ -245,7 +246,6 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                     return currentPlayer;
                 }
             }
-            
         }
     }
     if (turns == NUM_COL * NUM_ROW)
@@ -268,7 +268,7 @@ int evaluateChunk(int countPlayer, int countOpponent, int empty)
 
     if (countPlayer == 4) // winning move
     {
-        return 10001;
+        return 20000;
     }
     else if (countPlayer == 3 && countOpponent == 0) // three consecutive
     {
@@ -310,11 +310,12 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
 
     for (int row = 0; row < NUM_ROW; row++)
     {
-        countPlayer = 0;
-        countOpponent = 0;
-        empty = 0;
+
         for (int col = 0; col < last_column; col++)
         {
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
             for (int i = 0; i < 4; i++)
             {
                 if (board[row][col + i] == currentPlayer)
@@ -332,19 +333,17 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateChunk(countPlayer, countOpponent, empty);
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
         }
     }
 
     for (int col = 0; col < NUM_COL; col++)
     {
-        countPlayer = 0;
-        countOpponent = 0;
-        empty = 0;
+
         for (int row = 0; row < last_row; row++)
         {
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
             for (int i = 0; i < 4; i++)
             {
                 if (board[row + i][col] == currentPlayer)
@@ -361,9 +360,6 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 }
             }
             score += evaluateChunk(countPlayer, countOpponent, empty);
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
         }
     }
 
@@ -371,6 +367,9 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
     {
         for (unsigned int r = 3; r < NUM_ROW; r++)
         {
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
             for (int i = 0; i < 4; i++)
             {
                 if ((unsigned int)board[r - i][c + i] == currentPlayer)
@@ -388,15 +387,15 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateChunk(countPlayer, countOpponent, empty);
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
         }
     }
     for (unsigned int c = 0; c < NUM_COL - 3; c++)
     {
         for (unsigned int r = 0; r < NUM_ROW - 3; r++)
         {
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
             for (int i = 0; i < 4; i++)
             {
                 if ((unsigned int)board[r + i][c + i] == currentPlayer)
@@ -414,9 +413,6 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateChunk(countPlayer, countOpponent, empty);
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
         }
     }
 
@@ -468,7 +464,20 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
     if (currentPlayer == AI)
     {
         pair<int, int> bestScore = {INT_MIN, -1};
-
+        /*auto found1 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
+        auto found2 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
+        if (found1 != nextMoves.end())
+        {
+            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
+            nextMoves.erase(it, nextMoves.end());
+            nextMoves.insert(nextMoves.begin(), killerMoves[depth][0]);
+        }
+        if (found2 != nextMoves.end())
+        {
+            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
+            nextMoves.erase(it, nextMoves.end());
+            nextMoves.insert(nextMoves.begin()+1, killerMoves[depth][1]);
+        }*/
         for (int col : nextMoves)
         {
             int row = add_move(board, col, currentPlayer);
@@ -484,6 +493,12 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
             if (alpha >= beta)
             {
+                /*if (killerMoves[depth][0] != col)
+                {
+                    killerMoves[depth][1] = killerMoves[depth][0];
+                    killerMoves[depth][0] = col;
+                }*/
+
                 break;
             }
         }
@@ -492,7 +507,20 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
     else
     {
         pair<int, int> bestScore = {INT_MAX, -1};
-
+        /*auto found1 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
+        auto found2 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
+        if (found1 != nextMoves.end())
+        {
+            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
+            nextMoves.erase(it, nextMoves.end());
+            nextMoves.insert(nextMoves.begin(), killerMoves[depth][0]);
+        }
+        if (found2 != nextMoves.end())
+        {
+            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
+            nextMoves.erase(it, nextMoves.end());
+            nextMoves.insert(nextMoves.begin()+1, killerMoves[depth][1]);
+        }*/
         for (int col : nextMoves)
         {
             int row = add_move(board, col, currentPlayer);
@@ -508,6 +536,11 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
             if (alpha >= beta)
             {
+                /*if (killerMoves[depth][0] != col)
+                {
+                    killerMoves[depth][1] = killerMoves[depth][0];
+                    killerMoves[depth][0] = col;
+                }*/
                 break;
             }
         }
@@ -580,7 +613,7 @@ void play_game()
 
     while (gameOver < 0)
     {
-        move = currentPlayer == PLAYER ? userMove() : userMove();
+        move = currentPlayer == PLAYER ? userMove() : aiMove();
         if (currentPlayer == PLAYER)
         {
             outfile << move + 1 << endl;

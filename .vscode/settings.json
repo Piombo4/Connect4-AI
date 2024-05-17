@@ -3,6 +3,7 @@
         "ostream": "cpp",
         "new": "cpp",
         "algorithm": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "utility": "cpp"
     }
 }

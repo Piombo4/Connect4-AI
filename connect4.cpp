@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -14,12 +15,14 @@ const int PLAYER = 1;
 const int AI = 2;
 const int DRAW = 3;
 
-unsigned int MAX_DEPTH = 10;
+unsigned int MAX_DEPTH = 8;
 
 vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
 int gameOver;
 int currentPlayer;
 int turns;
+
+ofstream outfile("moves.txt");
 
 void init_board()
 {
@@ -55,14 +58,14 @@ void draw_board(vector<vector<int>> &board)
                 cout << " ";
                 break;
             case PLAYER:
-                cout << "\x1b[33m";
+                cout << "\e[33m";
                 cout << "O";
-                cout << "\x1b[0m";
+                cout << "\e[0m";
                 break;
             case AI:
-                cout << "\x1b[31m";
+                cout << "\e[31m";
                 cout << "O";
-                cout << "\x1b[0m";
+                cout << "\e[0m";
                 break;
             default:
                 break;
@@ -82,7 +85,7 @@ void draw_board(vector<vector<int>> &board)
 }
 int add_move(vector<vector<int>> &board, int move, int currentPlayer)
 {
-    
+
     for (int row = 0; row < NUM_ROW; row++)
     {
         if (board[row][move] == EMPTY)
@@ -96,54 +99,60 @@ int add_move(vector<vector<int>> &board, int move, int currentPlayer)
 int check_end(vector<vector<int>> &board, int currentPlayer)
 {
     int count;
-    int last_column = NUM_COL - 1;
-    int last_row = NUM_ROW - 1;
 
     // check horizontal win
     for (int row = 0; row < NUM_ROW; row++)
     {
-        count = 1;
-        for (int col = 0; col < last_column; col++)
+        count = 0;
+        for (int col = 0; col < NUM_COL - 3; col++)
         {
-            if (count == 4)
+            count = 0;
+            for (int i = 0; i < 4; i++)
             {
-                cout << "Horizontal win!";
-                cout << endl;
-                return currentPlayer;
+                if (board[row][col + i] == currentPlayer)
+                {
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+                if (count == 4)
+                {
+                    cout << "Horizontal Win";
+                    cout << endl;
+                    return currentPlayer;
+                }
             }
-            if (board[row][col] == currentPlayer && board[row][col] == board[row][col + 1])
+        }
+    }
+    // check vertical win
+    for (int col = 0; col < NUM_COL; col++)
+    {
+        count = 0;
+        for (int row = 0; row < NUM_ROW - 3; row++)
+        {
+            count = 0;
+            for (int i = 0; i < 4; i++)
             {
-                count++;
-            }
-            else
-            {
-                count = 1;
+                if (board[row + i][col] == currentPlayer)
+                {
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+                if (count == 4)
+                {
+                    cout << "Vertical Win";
+                    cout << endl;
+                    return currentPlayer;
+                }
             }
         }
     }
 
-    // check vertical win
-    for (int col = 0; col < NUM_COL; col++)
-    {
-        count = 1;
-        for (int row = 0; row < last_row; row++)
-        {
-            if (count == 4)
-            {
-                cout << "Vertical win!";
-                cout << endl;
-                return currentPlayer;
-            }
-            if (board[row][col] == currentPlayer && board[row][col] == board[row + 1][col])
-            {
-                count++;
-            }
-            else
-            {
-                count = 1;
-            }
-        }
-    }
     // check diagonal win
     for (unsigned int c = 0; c < NUM_COL - 3; c++)
     {
@@ -161,7 +170,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 if (count == 4)
                 {
-                    cout << "Diagonal win!";
+                    cout << "Diagonal Win";
                     cout << endl;
                     return currentPlayer;
                 }
@@ -186,7 +195,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
 
                 if (count == 4)
                 {
-                    cout << "Diagonal win!";
+                    cout << "Diagonal Win";
                     cout << endl;
                     return currentPlayer;
                 }
@@ -203,26 +212,30 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
 }
 int evaluateLine(int countPlayer, int countOpponent, int empty)
 {
-    
+
     if (countPlayer == 4) // winning move
     {
-        return 1000;
+        return 10001;
     }
     else if (countPlayer == 3 && countOpponent == 0) // three in a row
     {
-        return 500;
+        return 1000;
     }
     else if (countPlayer == 2 && countOpponent == 0)
-    { // 2 in a row
-        return 100;
-    }
-    else if (countOpponent == 3 && empty == 1)
     {
-        return -500;
+        return 500;
     }
     else if (countOpponent == 2 && empty == 2)
     {
-        return -100;
+        return -501;
+    }
+    else if (countOpponent == 3 && empty == 1)
+    {
+        return -1001;
+    }
+    else if (countOpponent == 4)
+    {
+        return -10000;
     }
     return 0;
 }
@@ -234,7 +247,7 @@ int evaluateLine(int countPlayer, int countOpponent, int empty)
  */
 int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
 {
-   
+
     int score = 0;
     int last_column = NUM_COL - 3;
     int last_row = NUM_ROW - 3;
@@ -266,6 +279,9 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateLine(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
 
@@ -292,6 +308,9 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 }
             }
             score += evaluateLine(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
 
@@ -303,7 +322,7 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             {
                 if ((unsigned int)board[r - i][c + i] == currentPlayer)
                 {
-                    countPlayer++;               
+                    countPlayer++;
                 }
                 else if ((unsigned int)board[r - i][c + i] != EMPTY)
                 {
@@ -316,6 +335,9 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateLine(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
     for (unsigned int c = 0; c < NUM_COL - 3; c++)
@@ -327,7 +349,6 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 if ((unsigned int)board[r + i][c + i] == currentPlayer)
                 {
                     countPlayer++;
-                    
                 }
                 else if ((unsigned int)board[r + i][c + i] != EMPTY)
                 {
@@ -340,10 +361,12 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateLine(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
-    
-   
+
     return score;
 }
 
@@ -381,8 +404,8 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
     if (nextMoves.empty() || depth == 0)
     {
-       
-        return {evaluateBoard(board, currentPlayer), -1};
+
+        return {evaluateBoard(board, AI), -1};
     }
 
     if (currentPlayer == AI)
@@ -468,7 +491,7 @@ int userMove()
         cout << endl
              << endl;
     }
-    return move-1;
+    return move - 1;
 }
 int aiMove()
 {
@@ -476,7 +499,6 @@ int aiMove()
     cout << "\t- AI turn... -";
     cout << endl;
     int move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI).second;
-    
     return move;
 }
 void play_game()
@@ -490,7 +512,10 @@ void play_game()
     while (gameOver < 0)
     {
         move = currentPlayer == PLAYER ? userMove() : aiMove();
-        
+        if (currentPlayer == PLAYER)
+        {
+            outfile << move+1 << endl;
+        }
         add_move(board, move, currentPlayer);
         draw_board(board);
         gameOver = check_end(board, currentPlayer); // detect win or draw
@@ -522,8 +547,10 @@ void play_game()
 int main()
 {
     init_board();
+
     play_game();
+    outfile.close();
     cout << endl;
-    cout<<"END";
+    cout << "END";
     return 0;
 }

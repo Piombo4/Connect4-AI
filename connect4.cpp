@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <windows.h>
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -24,6 +25,27 @@ int turns;
 
 ofstream outfile("moves.txt");
 
+/*
+ *   Enable the ANSI colors on the normal terminal
+ *
+ */
+void EnableANSIColors()
+{
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE)
+        return;
+
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode))
+        return;
+
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    if (!SetConsoleMode(hOut, dwMode))
+        return;
+}
+/*
+ *   Initialize the board
+ */
 void init_board()
 {
     cout << "  ____                            _     _____                \n";
@@ -44,6 +66,10 @@ void init_board()
         }
     }
 }
+/*
+ *   Draw the board
+ *   @param board - the board to draw
+ */
 void draw_board(vector<vector<int>> &board)
 {
 
@@ -83,6 +109,13 @@ void draw_board(vector<vector<int>> &board)
     }
     cout << endl;
 }
+/*
+ *   Add a move to the board
+ *   @param board - the board to add the move
+ *   @param move - the move to add (it represents a column)
+ *   @param currentPlayer - the player who made the move
+ *   @return - the row in which the move was added
+ */
 int add_move(vector<vector<int>> &board, int move, int currentPlayer)
 {
 
@@ -96,6 +129,12 @@ int add_move(vector<vector<int>> &board, int move, int currentPlayer)
     }
     return -1;
 }
+/*
+ *   Check whether the current position is a winning position
+ *   @param board - the board
+ *   @param currentPlayer - the player to check for the win
+ *   @return - currentPlayer if the currentPlayer has won, 0 it's a draw and -1 if the player hasn't won
+ */
 int check_end(vector<vector<int>> &board, int currentPlayer)
 {
     int count;
@@ -103,7 +142,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
     // check horizontal win
     for (int row = 0; row < NUM_ROW; row++)
     {
-        count = 0;
+        
         for (int col = 0; col < NUM_COL - 3; col++)
         {
             count = 0;
@@ -115,7 +154,8 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-                    count = 0;
+                   
+                    break;
                 }
                 if (count == 4)
                 {
@@ -129,10 +169,10 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
     // check vertical win
     for (int col = 0; col < NUM_COL; col++)
     {
-        count = 0;
+       
         for (int row = 0; row < NUM_ROW - 3; row++)
         {
-            count = 0;
+           count = 0;
             for (int i = 0; i < 4; i++)
             {
                 if (board[row + i][col] == currentPlayer)
@@ -141,7 +181,8 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-                    count = 0;
+                   
+                    break;
                 }
                 if (count == 4)
                 {
@@ -158,6 +199,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
     {
         for (unsigned int r = 3; r < NUM_ROW; r++)
         {
+             count = 0;
             for (int i = 0; i < 4; i++)
             {
                 if ((unsigned int)board[r - i][c + i] == currentPlayer)
@@ -166,7 +208,8 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-                    count = 0;
+                    
+                    break;
                 }
                 if (count == 4)
                 {
@@ -175,13 +218,14 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                     return currentPlayer;
                 }
             }
-            count = 0;
+           
         }
     }
     for (unsigned int c = 0; c < NUM_COL - 3; c++)
     {
         for (unsigned int r = 0; r < NUM_ROW - 3; r++)
         {
+            count = 0;
             for (int i = 0; i < 4; i++)
             {
                 if ((unsigned int)board[r + i][c + i] == currentPlayer)
@@ -191,6 +235,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 else
                 {
                     count = 0;
+                    break;
                 }
 
                 if (count == 4)
@@ -200,7 +245,7 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                     return currentPlayer;
                 }
             }
-            count = 0;
+            
         }
     }
     if (turns == NUM_COL * NUM_ROW)
@@ -210,30 +255,38 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
 
     return -1;
 }
-int evaluateLine(int countPlayer, int countOpponent, int empty)
+/*
+ *   Heuristic function
+ *   If possible it chooses the winning move. It prefers to block rather than placing consecutive pieces
+ *   @param countPlayer - The number of consecutive pieces of the player
+ *   @param countOpponent -The number of consecutive pieces of the opponent
+ *   @param empty -  The number of empty spaces
+ *   @return - the score of the move
+ */
+int evaluateChunk(int countPlayer, int countOpponent, int empty)
 {
 
     if (countPlayer == 4) // winning move
     {
         return 10001;
     }
-    else if (countPlayer == 3 && countOpponent == 0) // three in a row
+    else if (countPlayer == 3 && countOpponent == 0) // three consecutive
     {
-        return 1000;
+        return 2000;
     }
-    else if (countPlayer == 2 && countOpponent == 0)
+    else if (countPlayer == 2 && countOpponent == 0) // two consecutive
     {
         return 500;
     }
-    else if (countOpponent == 2 && empty == 2)
+    else if (countOpponent == 2 && empty == 2) // two consecutive of the opponent
     {
         return -501;
     }
-    else if (countOpponent == 3 && empty == 1)
+    else if (countOpponent == 3 && empty == 1) // three consecutive of the opponent
     {
-        return -1001;
+        return -2001;
     }
-    else if (countOpponent == 4)
+    else if (countOpponent == 4) // winning move for the opponent
     {
         return -10000;
     }
@@ -278,7 +331,7 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 }
             }
 
-            score += evaluateLine(countPlayer, countOpponent, empty);
+            score += evaluateChunk(countPlayer, countOpponent, empty);
             countPlayer = 0;
             countOpponent = 0;
             empty = 0;
@@ -307,7 +360,7 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                     empty++;
                 }
             }
-            score += evaluateLine(countPlayer, countOpponent, empty);
+            score += evaluateChunk(countPlayer, countOpponent, empty);
             countPlayer = 0;
             countOpponent = 0;
             empty = 0;
@@ -334,7 +387,7 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 }
             }
 
-            score += evaluateLine(countPlayer, countOpponent, empty);
+            score += evaluateChunk(countPlayer, countOpponent, empty);
             countPlayer = 0;
             countOpponent = 0;
             empty = 0;
@@ -360,7 +413,7 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 }
             }
 
-            score += evaluateLine(countPlayer, countOpponent, empty);
+            score += evaluateChunk(countPlayer, countOpponent, empty);
             countPlayer = 0;
             countOpponent = 0;
             empty = 0;
@@ -371,8 +424,9 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
 }
 
 /*
+ *   Generates all the possible moves from a certain position
  *   @param board - board to generate the next possible moves from
- *   @return vector<int> - the columns where a piece placement is possible
+ *   @return - the columns where a piece placement is possible
  */
 vector<int> generateMoves(vector<vector<int>> &board)
 {
@@ -390,13 +444,16 @@ vector<int> generateMoves(vector<vector<int>> &board)
     }
     return possibleMoves;
 }
-vector<vector<int>> copyBoard(vector<vector<int>> board)
-{
-    return board;
-}
+
 /*
- *
- * @return - {score, column to place piece}
+ * Applies the minimax algorithm with alpha-beta pruning to determine the best move.
+ * @param board - the current board
+ * @param depth - the current depth of the search tree
+ * @param alpha - the best value that the maximizer can guarantee at the current level or above
+ * @param beta  - the best value that the minimizer can guarantee at the current level or above
+ * @param currentPlayer - the player whose move is being considered
+ * @return - a pair of integers where the first element is the score of the board for the current player,
+ *           and the second element is the best move's position on the board.
  */
 pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int beta, int currentPlayer)
 {
@@ -457,6 +514,10 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
         return bestScore;
     }
 }
+/*
+ * A move made by a human player
+ * @return - the column to place the piece
+ */
 int userMove()
 {
     int move;
@@ -493,14 +554,22 @@ int userMove()
     }
     return move - 1;
 }
+/*
+ * A move made by an AI
+ * @return - the column to place the piece
+ */
 int aiMove()
 {
     cout << endl;
     cout << "\t- AI turn... -";
     cout << endl;
+    // Sleep(500); //Just for slowing down so that the player can follow
     int move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI).second;
     return move;
 }
+/*
+ * Starts the game
+ */
 void play_game()
 {
     gameOver = -1;
@@ -511,10 +580,10 @@ void play_game()
 
     while (gameOver < 0)
     {
-        move = currentPlayer == PLAYER ? userMove() : aiMove();
+        move = currentPlayer == PLAYER ? userMove() : userMove();
         if (currentPlayer == PLAYER)
         {
-            outfile << move+1 << endl;
+            outfile << move + 1 << endl;
         }
         add_move(board, move, currentPlayer);
         draw_board(board);
@@ -546,8 +615,8 @@ void play_game()
 
 int main()
 {
+    EnableANSIColors();
     init_board();
-
     play_game();
     outfile.close();
     cout << endl;

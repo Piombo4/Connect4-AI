@@ -17,7 +17,7 @@ const int PLAYER = 1;
 const int AI = 2;
 const int DRAW = 3;
 
-unsigned int MAX_DEPTH = 10;
+unsigned int MAX_DEPTH = 8;
 
 // vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
 
@@ -381,7 +381,7 @@ int evaluateChunk(int countPlayer, int countOpponent, int empty)
 
     if (countPlayer == 4) // winning move
     {
-        return 20000;
+        return 200000;
     }
     else if (countPlayer == 3 && countOpponent == 0) // three consecutive
     {
@@ -389,19 +389,20 @@ int evaluateChunk(int countPlayer, int countOpponent, int empty)
     }
     else if (countPlayer == 2 && countOpponent == 0) // two consecutive
     {
-        return 500;
+        return 200;
     }
     else if (countOpponent == 2 && empty == 2) // two consecutive of the opponent
     {
-        return -501;
+        return -201;
     }
     else if (countOpponent == 3 && empty == 1) // three consecutive of the opponent
     {
+        
         return -2001;
     }
     else if (countOpponent == 4) // winning move for the opponent
     {
-        return -10000;
+        return -20000;
     }
     return 0;
 }
@@ -569,22 +570,15 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
     //int tempBoard[NUM_ROW][NUM_COL];
 
     if (nextMoves.empty() || depth == 0)
-    {
-        if(winning_move(board,currentPlayer)){
-            return {currentPlayer == AI ? 1000000:-1000000,-1};
-        }
+    {      
         return {evaluateBoard(board, AI), -1};
     }
-
+    
     if (currentPlayer == AI)
-    {
-
+    {   
         pair<int, int> bestScore = {INT_MIN, -1};
-
         for (int col : nextMoves)
         {
-
-            
             int row = add_move(board, col, currentPlayer);
             int currentScore = minimax(board, depth - 1, alpha, beta, PLAYER).first;
 
@@ -679,8 +673,11 @@ int aiMove()
     cout << "\t- AI turn... -";
     cout << endl;
 
-    int move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI).second;
-    return move;
+    pair<int,int> move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI);
+    cout << endl;
+    cout << move.first;
+    cout << endl;
+    return move.second;
 }
 /*
  * Starts the game

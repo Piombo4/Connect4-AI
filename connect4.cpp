@@ -2,26 +2,30 @@
 #include <vector>
 #include <fstream>
 #include <windows.h>
-#include <algorithm> 
+#include <algorithm>
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
 using namespace std;
 
-unsigned int NUM_COL = 7;
-unsigned int NUM_ROW = 6;
+const unsigned int NUM_COL = 7;
+const unsigned int NUM_ROW = 6;
 
 const int EMPTY = 0;
 const int PLAYER = 1;
 const int AI = 2;
 const int DRAW = 3;
 
-unsigned int MAX_DEPTH = 8;
+unsigned int MAX_DEPTH = 10;
 
+// vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
+
+//int board[NUM_ROW][NUM_COL];
 vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
+
 vector<vector<int>> killerMoves(MAX_DEPTH, vector<int>(2));
-int gameOver;
+bool gameOver;
 int currentPlayer;
 int turns;
 
@@ -135,6 +139,116 @@ int add_move(vector<vector<int>> &board, int move, int currentPlayer)
  *   Check whether the current position is a winning position
  *   @param board - the board
  *   @param currentPlayer - the player to check for the win
+ *   @return - true if currentPlayer has won, false otherwise
+ */
+bool winning_move(vector<vector<int>> &board, int currentPlayer)
+{
+    int count;
+
+    // check horizontal win
+    for (int row = 0; row < NUM_ROW; row++)
+    {
+
+        for (int col = 0; col < NUM_COL - 3; col++)
+        {
+            count = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if (board[row][col + i] == currentPlayer)
+                {
+                    count++;
+                }
+                else
+                {
+                    break;
+                }
+                if (count == 4)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    // check vertical win
+    for (int col = 0; col < NUM_COL; col++)
+    {
+
+        for (int row = 0; row < NUM_ROW - 3; row++)
+        {
+            count = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if (board[row + i][col] == currentPlayer)
+                {
+                    count++;
+                }
+                else
+                {
+
+                    break;
+                }
+                if (count == 4)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // check diagonal win
+    for (unsigned int c = 0; c < NUM_COL - 3; c++)
+    {
+        for (unsigned int r = 3; r < NUM_ROW; r++)
+        {
+            count = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if ((unsigned int)board[r - i][c + i] == currentPlayer)
+                {
+                    count++;
+                }
+                else
+                {
+
+                    break;
+                }
+                if (count == 4)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    for (unsigned int c = 0; c < NUM_COL - 3; c++)
+    {
+        for (unsigned int r = 0; r < NUM_ROW - 3; r++)
+        {
+            count = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if ((unsigned int)board[r + i][c + i] == currentPlayer)
+                {
+                    count++;
+                }
+                else
+                {
+
+                    break;
+                }
+
+                if (count == 4)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+/*
+ *   Check whether the current position is a winning position
+ *   @param board - the board
+ *   @param currentPlayer - the player to check for the win
  *   @return - currentPlayer if the currentPlayer has won, 0 it's a draw and -1 if the player hasn't won
  */
 int check_end(vector<vector<int>> &board, int currentPlayer)
@@ -156,7 +270,6 @@ int check_end(vector<vector<int>> &board, int currentPlayer)
                 }
                 else
                 {
-
                     break;
                 }
                 if (count == 4)
@@ -363,20 +476,20 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
         }
     }
 
-    for (unsigned int c = 0; c < NUM_COL - 3; c++)
+    for (int c = 0; c < NUM_COL - 3; c++)
     {
-        for (unsigned int r = 3; r < NUM_ROW; r++)
+        for (int r = 3; r < NUM_ROW; r++)
         {
             countPlayer = 0;
             countOpponent = 0;
             empty = 0;
             for (int i = 0; i < 4; i++)
             {
-                if ((unsigned int)board[r - i][c + i] == currentPlayer)
+                if (board[r - i][c + i] == currentPlayer)
                 {
                     countPlayer++;
                 }
-                else if ((unsigned int)board[r - i][c + i] != EMPTY)
+                else if (board[r - i][c + i] != EMPTY)
                 {
                     countOpponent++;
                 }
@@ -389,20 +502,20 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             score += evaluateChunk(countPlayer, countOpponent, empty);
         }
     }
-    for (unsigned int c = 0; c < NUM_COL - 3; c++)
+    for (int c = 0; c < NUM_COL - 3; c++)
     {
-        for (unsigned int r = 0; r < NUM_ROW - 3; r++)
+        for (int r = 0; r < NUM_ROW - 3; r++)
         {
             countPlayer = 0;
             countOpponent = 0;
             empty = 0;
             for (int i = 0; i < 4; i++)
             {
-                if ((unsigned int)board[r + i][c + i] == currentPlayer)
+                if (board[r + i][c + i] == currentPlayer)
                 {
                     countPlayer++;
                 }
-                else if ((unsigned int)board[r + i][c + i] != EMPTY)
+                else if (board[r + i][c + i] != EMPTY)
                 {
                     countOpponent++;
                 }
@@ -415,7 +528,6 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             score += evaluateChunk(countPlayer, countOpponent, empty);
         }
     }
-
     return score;
 }
 
@@ -454,32 +566,25 @@ vector<int> generateMoves(vector<vector<int>> &board)
 pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int beta, int currentPlayer)
 {
     vector<int> nextMoves = generateMoves(board);
+    //int tempBoard[NUM_ROW][NUM_COL];
 
     if (nextMoves.empty() || depth == 0)
     {
-
+        if(winning_move(board,currentPlayer)){
+            return {currentPlayer == AI ? 1000000:-1000000,-1};
+        }
         return {evaluateBoard(board, AI), -1};
     }
 
     if (currentPlayer == AI)
     {
+
         pair<int, int> bestScore = {INT_MIN, -1};
-        /*auto found1 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
-        auto found2 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
-        if (found1 != nextMoves.end())
-        {
-            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
-            nextMoves.erase(it, nextMoves.end());
-            nextMoves.insert(nextMoves.begin(), killerMoves[depth][0]);
-        }
-        if (found2 != nextMoves.end())
-        {
-            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
-            nextMoves.erase(it, nextMoves.end());
-            nextMoves.insert(nextMoves.begin()+1, killerMoves[depth][1]);
-        }*/
+
         for (int col : nextMoves)
         {
+
+            
             int row = add_move(board, col, currentPlayer);
             int currentScore = minimax(board, depth - 1, alpha, beta, PLAYER).first;
 
@@ -493,12 +598,6 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
             if (alpha >= beta)
             {
-                /*if (killerMoves[depth][0] != col)
-                {
-                    killerMoves[depth][1] = killerMoves[depth][0];
-                    killerMoves[depth][0] = col;
-                }*/
-
                 break;
             }
         }
@@ -507,22 +606,10 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
     else
     {
         pair<int, int> bestScore = {INT_MAX, -1};
-        /*auto found1 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
-        auto found2 = find(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
-        if (found1 != nextMoves.end())
-        {
-            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][0]);
-            nextMoves.erase(it, nextMoves.end());
-            nextMoves.insert(nextMoves.begin(), killerMoves[depth][0]);
-        }
-        if (found2 != nextMoves.end())
-        {
-            auto it = remove(nextMoves.begin(), nextMoves.end(), killerMoves[depth][1]);
-            nextMoves.erase(it, nextMoves.end());
-            nextMoves.insert(nextMoves.begin()+1, killerMoves[depth][1]);
-        }*/
         for (int col : nextMoves)
         {
+
+            //memcpy(tempBoard, board, NUM_COL * NUM_ROW * sizeof(int));
             int row = add_move(board, col, currentPlayer);
             int currentScore = minimax(board, depth - 1, alpha, beta, AI).first;
 
@@ -536,11 +623,6 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
             if (alpha >= beta)
             {
-                /*if (killerMoves[depth][0] != col)
-                {
-                    killerMoves[depth][1] = killerMoves[depth][0];
-                    killerMoves[depth][0] = col;
-                }*/
                 break;
             }
         }
@@ -596,7 +678,7 @@ int aiMove()
     cout << endl;
     cout << "\t- AI turn... -";
     cout << endl;
-    // Sleep(500); //Just for slowing down so that the player can follow
+
     int move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI).second;
     return move;
 }
@@ -605,14 +687,22 @@ int aiMove()
  */
 void play_game()
 {
-    gameOver = -1;
-    draw_board(board); // draw empty board
+    gameOver = false;
+    // draw empty board
+    draw_board(board);
+    // player starts
     currentPlayer = PLAYER;
-    turns = 1;
+    turns = 0;
     int move = -1;
 
-    while (gameOver < 0)
+    while (!gameOver)
     {
+        if (turns == NUM_COL*NUM_ROW)
+        {
+            cout << "Draw!";
+            cout << endl;
+            return;
+        }
         move = currentPlayer == PLAYER ? userMove() : aiMove();
         if (currentPlayer == PLAYER)
         {
@@ -620,28 +710,20 @@ void play_game()
         }
         add_move(board, move, currentPlayer);
         draw_board(board);
-        gameOver = check_end(board, currentPlayer); // detect win or draw
-
-        if (gameOver < 0)
+        gameOver = winning_move(board, currentPlayer); // detect win or draw
+        if (!gameOver)
         {
             currentPlayer = (currentPlayer == PLAYER) ? AI : PLAYER;
             turns++;
         }
     }
-    if (gameOver == PLAYER)
-    {
-
-        cout << "You won!";
-        cout << endl;
-    }
-    else if (gameOver == AI)
-    {
-        cout << "You lost!";
+    if(currentPlayer == PLAYER){
+         cout << "You won!";
         cout << endl;
     }
     else
     {
-        cout << "Draw!";
+        cout << "You lost!";
         cout << endl;
     }
 }

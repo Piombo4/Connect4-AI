@@ -3,6 +3,11 @@
 #include <fstream>
 #include <windows.h>
 #include <algorithm>
+#include <chrono>
+using std::chrono::duration;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
@@ -13,18 +18,19 @@ const unsigned int NUM_COL = 7;
 const unsigned int NUM_ROW = 6;
 
 const int EMPTY = 0;
-const int PLAYER = 1;
-const int AI = 2;
-const int DRAW = 3;
+const int PLAYER = -1;
+const int AI = 1;
 
-unsigned int MAX_DEPTH = 8;
+const int MAX_DEPTH = 14;
+const int KILLER_MOVES_SLOTS = 2;
+const int KILLER_DEPTH = 15;
 
 // vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
 
-//int board[NUM_ROW][NUM_COL];
+// int board[NUM_ROW][NUM_COL];
 vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL));
 
-vector<vector<int>> killerMoves(MAX_DEPTH, vector<int>(2));
+vector<vector<int>> killerMoves(KILLER_DEPTH, vector<int>(KILLER_MOVES_SLOTS));
 bool gameOver;
 int currentPlayer;
 int turns;
@@ -245,129 +251,7 @@ bool winning_move(vector<vector<int>> &board, int currentPlayer)
     }
     return false;
 }
-/*
- *   Check whether the current position is a winning position
- *   @param board - the board
- *   @param currentPlayer - the player to check for the win
- *   @return - currentPlayer if the currentPlayer has won, 0 it's a draw and -1 if the player hasn't won
- */
-int check_end(vector<vector<int>> &board, int currentPlayer)
-{
-    int count;
 
-    // check horizontal win
-    for (int row = 0; row < NUM_ROW; row++)
-    {
-
-        for (int col = 0; col < NUM_COL - 3; col++)
-        {
-            count = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if (board[row][col + i] == currentPlayer)
-                {
-                    count++;
-                }
-                else
-                {
-                    break;
-                }
-                if (count == 4)
-                {
-                    cout << "Horizontal Win";
-                    cout << endl;
-                    return currentPlayer;
-                }
-            }
-        }
-    }
-    // check vertical win
-    for (int col = 0; col < NUM_COL; col++)
-    {
-
-        for (int row = 0; row < NUM_ROW - 3; row++)
-        {
-            count = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if (board[row + i][col] == currentPlayer)
-                {
-                    count++;
-                }
-                else
-                {
-
-                    break;
-                }
-                if (count == 4)
-                {
-                    cout << "Vertical Win";
-                    cout << endl;
-                    return currentPlayer;
-                }
-            }
-        }
-    }
-
-    // check diagonal win
-    for (unsigned int c = 0; c < NUM_COL - 3; c++)
-    {
-        for (unsigned int r = 3; r < NUM_ROW; r++)
-        {
-            count = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if ((unsigned int)board[r - i][c + i] == currentPlayer)
-                {
-                    count++;
-                }
-                else
-                {
-
-                    break;
-                }
-                if (count == 4)
-                {
-                    cout << "Diagonal Win";
-                    cout << endl;
-                    return currentPlayer;
-                }
-            }
-        }
-    }
-    for (unsigned int c = 0; c < NUM_COL - 3; c++)
-    {
-        for (unsigned int r = 0; r < NUM_ROW - 3; r++)
-        {
-            count = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if ((unsigned int)board[r + i][c + i] == currentPlayer)
-                {
-                    count++;
-                }
-                else
-                {
-                    count = 0;
-                    break;
-                }
-
-                if (count == 4)
-                {
-                    cout << "Diagonal Win";
-                    cout << endl;
-                    return currentPlayer;
-                }
-            }
-        }
-    }
-    if (turns == NUM_COL * NUM_ROW)
-    {
-        return DRAW;
-    }
-
-    return -1;
-}
 /*
  *   Heuristic function
  *   If possible it chooses the winning move. It prefers to block rather than placing consecutive pieces
@@ -381,28 +265,27 @@ int evaluateChunk(int countPlayer, int countOpponent, int empty)
 
     if (countPlayer == 4) // winning move
     {
-        return 200000;
+        return 10001;
     }
     else if (countPlayer == 3 && countOpponent == 0) // three consecutive
     {
-        return 2000;
+        return 1000;
     }
     else if (countPlayer == 2 && countOpponent == 0) // two consecutive
     {
-        return 200;
+        return 100;
     }
-    else if (countOpponent == 2 && empty == 2) // two consecutive of the opponent
+    else if (countOpponent == 2 && countPlayer == 0) // two consecutive of the opponent
     {
-        return -201;
+        return -101;
     }
-    else if (countOpponent == 3 && empty == 1) // three consecutive of the opponent
+    else if (countOpponent == 3 && countPlayer == 0) // three consecutive of the opponent
     {
-        
-        return -2001;
+        return -1001;
     }
     else if (countOpponent == 4) // winning move for the opponent
     {
-        return -20000;
+        return -10000;
     }
     return 0;
 }
@@ -421,15 +304,14 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
     int countPlayer = 0;
     int countOpponent = 0;
     int empty = 0;
-
     for (int row = 0; row < NUM_ROW; row++)
     {
-
+        int countPlayer = 0;
+        int countOpponent = 0;
+        int empty = 0;
         for (int col = 0; col < last_column; col++)
         {
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
+
             for (int i = 0; i < 4; i++)
             {
                 if (board[row][col + i] == currentPlayer)
@@ -445,19 +327,21 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                     empty++;
                 }
             }
-
             score += evaluateChunk(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
 
     for (int col = 0; col < NUM_COL; col++)
     {
-
+        int countPlayer = 0;
+        int countOpponent = 0;
+        int empty = 0;
         for (int row = 0; row < last_row; row++)
         {
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
+
             for (int i = 0; i < 4; i++)
             {
                 if (board[row + i][col] == currentPlayer)
@@ -474,16 +358,20 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
                 }
             }
             score += evaluateChunk(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
 
     for (int c = 0; c < NUM_COL - 3; c++)
     {
+        int countPlayer = 0;
+        int countOpponent = 0;
+        int empty = 0;
         for (int r = 3; r < NUM_ROW; r++)
         {
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
+
             for (int i = 0; i < 4; i++)
             {
                 if (board[r - i][c + i] == currentPlayer)
@@ -501,15 +389,19 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateChunk(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
     for (int c = 0; c < NUM_COL - 3; c++)
     {
+        int countPlayer = 0;
+        int countOpponent = 0;
+        int empty = 0;
         for (int r = 0; r < NUM_ROW - 3; r++)
         {
-            countPlayer = 0;
-            countOpponent = 0;
-            empty = 0;
+
             for (int i = 0; i < 4; i++)
             {
                 if (board[r + i][c + i] == currentPlayer)
@@ -527,6 +419,9 @@ int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
             }
 
             score += evaluateChunk(countPlayer, countOpponent, empty);
+            countPlayer = 0;
+            countOpponent = 0;
+            empty = 0;
         }
     }
     return score;
@@ -553,7 +448,36 @@ vector<int> generateMoves(vector<vector<int>> &board)
     }
     return possibleMoves;
 }
+void store_killer_moves(int move, int depth)
+{
 
+    for (int i = KILLER_MOVES_SLOTS - 2; i >= 0; i--)
+    {
+        killerMoves[depth][i + 1] = killerMoves[depth][i];
+    }
+    killerMoves[depth][0] = move;
+}
+
+/*
+ * Functions to sort values so that the values in the center are now first
+ */
+bool customSort(int a, int b, double center)
+{
+    double diffA = abs(a - center);
+    double diffB = abs(b - center);
+    if (diffA == diffB)
+    {
+        return a < b;
+    }
+    return diffA < diffB;
+}
+void sortByCenter(vector<int> &numbers)
+{
+    double center = (numbers.front() + numbers.back()) / 2.0;
+    sort(numbers.begin(), numbers.end(),
+         [center](int a, int b)
+         { return customSort(a, b, center); });
+}
 /*
  * Applies the minimax algorithm with alpha-beta pruning to determine the best move.
  * @param board - the current board
@@ -564,18 +488,32 @@ vector<int> generateMoves(vector<vector<int>> &board)
  * @return - a pair of integers where the first element is the score of the board for the current player,
  *           and the second element is the best move's position on the board.
  */
+
 pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int beta, int currentPlayer)
 {
+
     vector<int> nextMoves = generateMoves(board);
-    //int tempBoard[NUM_ROW][NUM_COL];
+    sortByCenter(nextMoves);
+    for (int slot = 0; slot < killerMoves[depth].size(); slot++)
+    {     
+        int killerMove = killerMoves[depth][slot];
+
+        for (int i = 0; i < nextMoves.size(); i++)
+            if (nextMoves[i] == killerMove)
+            {
+                nextMoves.erase(remove(nextMoves.begin(), nextMoves.end(), nextMoves[i]), nextMoves.end());
+                nextMoves.insert(nextMoves.begin(), killerMove);
+                break;
+            }
+    }
 
     if (nextMoves.empty() || depth == 0)
-    {      
+    {
         return {evaluateBoard(board, AI), -1};
     }
-    
+
     if (currentPlayer == AI)
-    {   
+    {
         pair<int, int> bestScore = {INT_MIN, -1};
         for (int col : nextMoves)
         {
@@ -592,6 +530,7 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
             if (alpha >= beta)
             {
+                store_killer_moves(col, depth);
                 break;
             }
         }
@@ -603,7 +542,7 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
         for (int col : nextMoves)
         {
 
-            //memcpy(tempBoard, board, NUM_COL * NUM_ROW * sizeof(int));
+            // memcpy(tempBoard, board, NUM_COL * NUM_ROW * sizeof(int));
             int row = add_move(board, col, currentPlayer);
             int currentScore = minimax(board, depth - 1, alpha, beta, AI).first;
 
@@ -617,6 +556,8 @@ pair<int, int> minimax(vector<vector<int>> &board, int depth, int alpha, int bet
 
             if (alpha >= beta)
             {
+
+                store_killer_moves(col, depth);
                 break;
             }
         }
@@ -673,11 +614,20 @@ int aiMove()
     cout << "\t- AI turn... -";
     cout << endl;
 
-    pair<int,int> move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI);
+    auto t1 = high_resolution_clock::now();
+    pair<int, int> move = minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, AI);
+    auto t2 = high_resolution_clock::now();
+    duration<double, milli> ms_double = t2 - t1;
+
+    // int move = searchMove(board, MAX_DEPTH);
     cout << endl;
-    cout << move.first;
+    cout << "Elaboration speed: " << ms_double.count() << "ms";
+    cout << endl;
+    cout << "Move played: " << move.second + 1 << "\n";
+    cout << "Move score: " << move.first << "\n";
     cout << endl;
     return move.second;
+    // return move;
 }
 /*
  * Starts the game
@@ -694,13 +644,13 @@ void play_game()
 
     while (!gameOver)
     {
-        if (turns == NUM_COL*NUM_ROW)
+        if (turns == NUM_COL * NUM_ROW)
         {
             cout << "Draw!";
             cout << endl;
             return;
         }
-        move = currentPlayer == PLAYER ? userMove() : aiMove();
+        move = currentPlayer == PLAYER ? aiMove() : aiMove();
         if (currentPlayer == PLAYER)
         {
             outfile << move + 1 << endl;
@@ -714,8 +664,9 @@ void play_game()
             turns++;
         }
     }
-    if(currentPlayer == PLAYER){
-         cout << "You won!";
+    if (currentPlayer == PLAYER)
+    {
+        cout << "You won!";
         cout << endl;
     }
     else
@@ -727,6 +678,7 @@ void play_game()
 
 int main()
 {
+
     EnableANSIColors();
     init_board();
     play_game();

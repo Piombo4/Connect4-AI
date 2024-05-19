@@ -10,6 +10,14 @@
         "xstring": "cpp",
         "xutility": "cpp",
         "ios": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "system_error": "cpp",
+        "xlocnum": "cpp",
+        "xtr1common": "cpp",
+        "xlocinfo": "cpp",
+        "chrono": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "xtree": "cpp"
     }
 }

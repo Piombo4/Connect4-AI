@@ -21,7 +21,7 @@ const int EMPTY = 0;
 const int PLAYER = -1;
 const int AI = 1;
 
-const int MAX_DEPTH = 14;
+const int MAX_DEPTH = 12;
 const int KILLER_MOVES_SLOTS = 2;
 const int KILLER_DEPTH = 15;
 
@@ -650,7 +650,7 @@ void play_game()
             cout << endl;
             return;
         }
-        move = currentPlayer == PLAYER ? aiMove() : aiMove();
+        move = currentPlayer == PLAYER ? userMove() : aiMove();
         if (currentPlayer == PLAYER)
         {
             outfile << move + 1 << endl;

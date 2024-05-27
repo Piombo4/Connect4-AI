@@ -1,6 +1,5 @@
 #ifndef BOARD
 #define BOARD
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -19,6 +18,7 @@ enum C : int16_t
 class Board
 {
 public:
+    vector<vector<int>> board;
     Board() : board(NUM_ROW, vector<int>(NUM_COL)) {}
     /*
      *   Initialize the board
@@ -235,7 +235,7 @@ public:
     /*
      *   @return - the board
      */
-    vector<vector<int>> getBoard()
+    const vector<vector<int>> &getBoard() const
     {
         return board;
     }
@@ -250,7 +250,6 @@ public:
     }
 
 private:
-    vector<vector<int>> board;
 };
 
 #endif

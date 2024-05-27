@@ -1,27 +1,43 @@
 #ifndef HEURISTIC
 #define HEURISTIC
+#include "Board.hpp"
 
-#include <iostream>
-#include <vector>
-#include <algorithm>
+class Board;
 using namespace std;
 
 const int KILLER_MOVES_SLOTS = 2;
 const int KILLER_DEPTH = 15;
-class Board;
 
 class Heuristic
 {
 public:
-    Heuristic() {}
+    Heuristic() : killerMoves(KILLER_DEPTH, vector<int>(KILLER_MOVES_SLOTS)) {}
 
+    void store_killer_moves(int move, int depth)
+    {
+
+        for (int i = KILLER_MOVES_SLOTS - 2; i >= 0; i--)
+        {
+            killerMoves[depth][i + 1] = killerMoves[depth][i];
+        }
+        killerMoves[depth][0] = move;
+    }
+    bool isKillerMove(int move, int depth){
+        for (int slot = 0; slot < killerMoves[depth].size(); slot++)
+        {
+            if(move == killerMoves[depth][slot]){
+                return true;
+            }
+        }
+        return false;
+    }
     /*
      * Evaluates the position of the board
      * @param board - the board to evaluate
      * @param currentPlayer - the player who has to move
      * @return - a score based on how good or bad the position is
      */
-    int evaluateBoard(vector<vector<int>> board, int currentPlayer)
+    int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
     {
 
         int score = 0;
@@ -152,6 +168,9 @@ public:
         }
         return score;
     }
+
+private:
+    vector<vector<int>> killerMoves;
     /*
      *   Heuristic function
      *   If possible it chooses the winning move. It prefers to block rather than placing consecutive pieces

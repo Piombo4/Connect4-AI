@@ -223,15 +223,7 @@ public:
         }
         return possibleMoves;
     }
-    /*
-     *   @param row - the row
-     *   @param col - the column
-     *   @return - the value of a cell
-     */
-    int getCell(int row, int col)
-    {
-        return board[row][col];
-    }
+
     /*
      *   @return - the board
      */

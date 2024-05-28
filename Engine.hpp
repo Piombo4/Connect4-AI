@@ -27,14 +27,18 @@ public:
 
         vector<int> nextMoves = board.generateMoves();
         sortByCenter(nextMoves);
-        /*for (int i = 0; i < nextMoves.size(); i++)
+        for (int slot = 0; slot < heuristic.killerMoves[depth].size(); slot++)
         {
-            if (heuristic.isKillerMove(nextMoves[i], depth))
-            {
-                nextMoves.erase(remove(nextMoves.begin(), nextMoves.end(), nextMoves[i]), nextMoves.end());
-                nextMoves.insert(nextMoves.begin(), nextMoves[i]);
-            }
-        }*/
+            int killerMove = heuristic.killerMoves[depth][slot];
+
+            for (int i = 0; i < nextMoves.size(); i++)
+                if (nextMoves[i] == killerMove)
+                {
+                    nextMoves.erase(remove(nextMoves.begin(), nextMoves.end(), nextMoves[i]), nextMoves.end());
+                    nextMoves.insert(nextMoves.begin(), nextMoves[i]);
+                    break;
+                }
+        }
         if (nextMoves.empty() || depth == 0)
         {
             return {heuristic.evaluateBoard(board.board, AI), -1};

@@ -58,7 +58,7 @@ int userMove(Board &board)
 
             cout << "Please insert a number between 1 and 7";
         }
-        else if (board.getCell(NUM_ROW - 1, move - 1) != C::EMPTY) // column full
+        else if (board.board[NUM_ROW - 1][move - 1] != C::EMPTY) // column full
         {
             cout << "Column full!";
         }

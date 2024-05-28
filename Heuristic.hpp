@@ -22,10 +22,12 @@ public:
         }
         killerMoves[depth][0] = move;
     }
-    bool isKillerMove(int move, int depth){
+    bool isKillerMove(int move, int depth)
+    {
         for (int slot = 0; slot < killerMoves[depth].size(); slot++)
         {
-            if(move == killerMoves[depth][slot]){
+            if (move == killerMoves[depth][slot])
+            {
                 return true;
             }
         }
@@ -168,9 +170,9 @@ public:
         }
         return score;
     }
+    vector<vector<int>> killerMoves;
 
 private:
-    vector<vector<int>> killerMoves;
     /*
      *   Heuristic function
      *   If possible it chooses the winning move. It prefers to block rather than placing consecutive pieces

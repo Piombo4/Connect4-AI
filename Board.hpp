@@ -64,7 +64,7 @@ public:
                 }
                 cout << "|";
             }
-            cout << row;
+
             cout << endl;
         }
 
@@ -75,6 +75,17 @@ public:
         }
         cout << endl;
     }
+
+    bool canPlay(int col)
+    {
+
+        if (board[NUM_ROW - 1][col] == C::EMPTY)
+        {
+            return true;
+        }
+
+        return false;
+    }
     /*
      *   Add a move to the board
      *   @param move - the move to add (it represents a column)
@@ -83,7 +94,6 @@ public:
      */
     int add_move(int move, int currentPlayer)
     {
-
         for (int row = 0; row < NUM_ROW; row++)
         {
             if (board[row][move] == C::EMPTY)
@@ -161,7 +171,7 @@ public:
                 count = 0;
                 for (int i = 0; i < 4; i++)
                 {
-                    if ((unsigned int)board[r - i][c + i] == currentPlayer)
+                    if (board[r - i][c + i] == currentPlayer)
                     {
                         count++;
                     }
@@ -184,7 +194,7 @@ public:
                 count = 0;
                 for (int i = 0; i < 4; i++)
                 {
-                    if ((unsigned int)board[r + i][c + i] == currentPlayer)
+                    if (board[r + i][c + i] == currentPlayer)
                     {
                         count++;
                     }
@@ -217,6 +227,7 @@ public:
                 if (board[row][col] == C::EMPTY)
                 {
                     possibleMoves.push_back(col);
+
                     break;
                 }
             }

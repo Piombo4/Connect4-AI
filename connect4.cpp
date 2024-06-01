@@ -15,9 +15,6 @@ using std::chrono::milliseconds;
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-class Board;
-class Engine;
-class Heuristic;
 using namespace std;
 
 const int MAX_DEPTH = 14;
@@ -39,11 +36,12 @@ int userMove(Board &board)
 {
     int move;
     cout << endl;
-    cout << "\t- Your turn! -";
+    cout << "Your turn! ";
     cout << endl;
 
     while (true)
     {
+        cout << endl;
         cout << "Insert the column: ";
         cin >> move;
 
@@ -53,7 +51,7 @@ int userMove(Board &board)
             cin.clear();
             cin.ignore(INT_MAX, '\n');
         }
-        else if ((unsigned int)move > NUM_COL || (unsigned int)move <= -0) // outside bounds
+        else if ((unsigned int)move > NUM_COL || (unsigned int)move <= 0) // outside bounds
         {
 
             cout << "Please insert a number between 1 and 7";
@@ -78,7 +76,7 @@ int userMove(Board &board)
 int aiMove(Board &board)
 {
     cout << endl;
-    cout << "\t- AI turn... -";
+    cout << "AI is thinking...";
     cout << endl;
 
     auto t1 = high_resolution_clock::now();
@@ -116,7 +114,7 @@ void start_game(Board &board)
     // draw empty board
     board.draw_board();
     // player starts
-    currentPlayer = C::PLAYER;
+    currentPlayer = C::AI;
     turns = 0;
     int move = -1;
 
@@ -128,14 +126,14 @@ void start_game(Board &board)
             cout << endl;
             return;
         }
-        move = currentPlayer == C::PLAYER ? aiMove(board) : aiMove(board);
+        move = currentPlayer == C::PLAYER ? userMove(board) : aiMove(board);
         if (currentPlayer == C::PLAYER)
         {
             outfile << move + 1 << endl;
         }
         board.add_move(move, currentPlayer);
         board.draw_board();
-        gameOver = board.winning_move(currentPlayer); // detect win or draw
+        gameOver = board.winning_move(currentPlayer);
         if (!gameOver)
         {
             currentPlayer = (currentPlayer == C::PLAYER) ? AI : C::PLAYER;

@@ -6,12 +6,27 @@
 #include "Board.hpp"
 #include "Heuristic.hpp"
 
-class Heuristic;
 using namespace std;
 class Engine
 {
+private:
+    Heuristic heuristic;
+    vector<int> possibleMoves = {4, 3, 5, 2, 1, 6, 0};
+    vector<int> orderedMoves;
+
 public:
     Engine(Heuristic h) : heuristic(h) {}
+    bool checkDraw(Board &board)
+    {
+        for (int i = 0; i < possibleMoves.size(); i++)
+        {
+            if (board.canPlay(possibleMoves[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     /*
      * Applies the minimax algorithm with alpha-beta pruning to determine the best move.
      * @param board - the current board
@@ -24,46 +39,58 @@ public:
      */
     pair<int, int> minimax(Board &board, int depth, int alpha, int beta, int currentPlayer)
     {
-
-        vector<int> nextMoves = board.generateMoves();
-        sortByCenter(nextMoves);
+        /*orderedMoves = possibleMoves;
         for (int slot = 0; slot < heuristic.killerMoves[depth].size(); slot++)
         {
             int killerMove = heuristic.killerMoves[depth][slot];
 
-            for (int i = 0; i < nextMoves.size(); i++)
-                if (nextMoves[i] == killerMove)
+            for (int i = 0; i < orderedMoves.size(); i++)
+            {
+                if (orderedMoves[i] == killerMove)
                 {
-                    nextMoves.erase(remove(nextMoves.begin(), nextMoves.end(), nextMoves[i]), nextMoves.end());
-                    nextMoves.insert(nextMoves.begin(), nextMoves[i]);
+                    orderedMoves.erase(orderedMoves.begin() + i);          // Rimuovi l'elemento
+                    orderedMoves.insert(orderedMoves.begin(), killerMove); // Inserisci l'elemento all'inizio
                     break;
                 }
-        }
-        if (nextMoves.empty() || depth == 0)
+            }
+        }*/ 
+        if (depth == 0)
         {
             return {heuristic.evaluateBoard(board.board, AI), -1};
+        }
+        else if (checkDraw(board))
+        {
+            return {0, -1};
         }
 
         if (currentPlayer == C::AI)
         {
+
             pair<int, int> bestScore = {INT_MIN, -1};
-            for (int col : nextMoves)
+            if (board.winning_move(C::PLAYER))
             {
-                int row = board.add_move(col, currentPlayer);
-                int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
-
-                if (currentScore > bestScore.first)
+                return bestScore;
+            }
+            for (int col : possibleMoves)
+            {
+                if (board.canPlay(col))
                 {
-                    bestScore = {currentScore, col};
-                }
-                alpha = max(alpha, bestScore.first);
+                    int row = board.add_move(col, currentPlayer);
+                    int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
 
-                board.undoMove(row, col);
+                    if (currentScore > bestScore.first)
+                    {
+                        bestScore = {currentScore, col};
+                    }
+                    alpha = max(alpha, bestScore.first);
 
-                if (alpha >= beta)
-                {
-                    heuristic.store_killer_moves(col, depth);
-                    break;
+                    board.undoMove(row, col);
+
+                    if (alpha >= beta)
+                    {
+                        heuristic.store_killer_moves(col, depth);
+                        break;
+                    }
                 }
             }
             return bestScore;
@@ -71,48 +98,35 @@ public:
         else
         {
             pair<int, int> bestScore = {INT_MAX, -1};
-            for (int col : nextMoves)
+            if (board.winning_move(C::AI))
             {
-                int row = board.add_move(col, currentPlayer);
-                int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
-
-                if (currentScore < bestScore.first)
+                return bestScore;
+            }
+            for (int col : possibleMoves)
+            {
+                if (board.canPlay(col))
                 {
-                    bestScore = {currentScore, col};
-                }
-                beta = min(beta, bestScore.first);
+                    int row = board.add_move(col, currentPlayer);
+                    int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
 
-                board.undoMove(row, col);
+                    if (currentScore < bestScore.first)
+                    {
+                        bestScore = {currentScore, col};
+                    }
+                    beta = min(beta, bestScore.first);
 
-                if (alpha >= beta)
-                {
+                    board.undoMove(row, col);
 
-                    heuristic.store_killer_moves(col, depth);
-                    break;
+                    if (alpha >= beta)
+                    {
+
+                        heuristic.store_killer_moves(col, depth);
+                        break;
+                    }
                 }
             }
             return bestScore;
         }
-    }
-
-private:
-    Heuristic heuristic;
-    bool customSort(int a, int b, double center)
-    {
-        double diffA = abs(a - center);
-        double diffB = abs(b - center);
-        if (diffA == diffB)
-        {
-            return a < b;
-        }
-        return diffA < diffB;
-    }
-    void sortByCenter(vector<int> &numbers)
-    {
-        double center = (numbers.front() + numbers.back()) / 2.0;
-        sort(numbers.begin(), numbers.end(),
-             [this, center](int a, int b)
-             { return customSort(a, b, center); });
     }
 };
 

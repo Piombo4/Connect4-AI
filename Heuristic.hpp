@@ -6,7 +6,7 @@ class Board;
 using namespace std;
 
 const int KILLER_MOVES_SLOTS = 2;
-const int KILLER_DEPTH = 15;
+const int KILLER_DEPTH = 18;
 
 class Heuristic
 {
@@ -41,21 +41,18 @@ public:
      */
     int evaluateBoard(vector<vector<int>> &board, int currentPlayer)
     {
-
         int score = 0;
         int last_column = NUM_COL - 3;
         int last_row = NUM_ROW - 3;
-        int countPlayer = 0;
-        int countOpponent = 0;
-        int empty = 0;
+
+        // Horizontal Check
         for (int row = 0; row < NUM_ROW; row++)
         {
-            int countPlayer = 0;
-            int countOpponent = 0;
-            int empty = 0;
             for (int col = 0; col < last_column; col++)
             {
-
+                int countPlayer = 0;
+                int countOpponent = 0;
+                int empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     if (board[row][col + i] == currentPlayer)
@@ -72,20 +69,17 @@ public:
                     }
                 }
                 score += evaluateChunk(countPlayer, countOpponent, empty);
-                countPlayer = 0;
-                countOpponent = 0;
-                empty = 0;
             }
         }
 
+        // Vertical Check
         for (int col = 0; col < NUM_COL; col++)
         {
-            int countPlayer = 0;
-            int countOpponent = 0;
-            int empty = 0;
             for (int row = 0; row < last_row; row++)
             {
-
+                int countPlayer = 0;
+                int countOpponent = 0;
+                int empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     if (board[row + i][col] == currentPlayer)
@@ -102,27 +96,24 @@ public:
                     }
                 }
                 score += evaluateChunk(countPlayer, countOpponent, empty);
-                countPlayer = 0;
-                countOpponent = 0;
-                empty = 0;
             }
         }
 
-        for (int c = 0; c < NUM_COL - 3; c++)
+        // Diagonal Check (Bottom-left to top-right)
+        for (int col = 0; col < last_column; col++)
         {
-            int countPlayer = 0;
-            int countOpponent = 0;
-            int empty = 0;
-            for (int r = 3; r < NUM_ROW; r++)
+            for (int row = 3; row < NUM_ROW; row++)
             {
-
+                int countPlayer = 0;
+                int countOpponent = 0;
+                int empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
-                    if (board[r - i][c + i] == currentPlayer)
+                    if (board[row - i][col + i] == currentPlayer)
                     {
                         countPlayer++;
                     }
-                    else if (board[r - i][c + i] != EMPTY)
+                    else if (board[row - i][col + i] != EMPTY)
                     {
                         countOpponent++;
                     }
@@ -131,28 +122,25 @@ public:
                         empty++;
                     }
                 }
-
                 score += evaluateChunk(countPlayer, countOpponent, empty);
-                countPlayer = 0;
-                countOpponent = 0;
-                empty = 0;
             }
         }
-        for (int c = 0; c < NUM_COL - 3; c++)
-        {
-            int countPlayer = 0;
-            int countOpponent = 0;
-            int empty = 0;
-            for (int r = 0; r < NUM_ROW - 3; r++)
-            {
 
+        // Diagonal Check (Top-left to bottom-right)
+        for (int col = 0; col < last_column; col++)
+        {
+            for (int row = 0; row < last_row; row++)
+            {
+                int countPlayer = 0;
+                int countOpponent = 0;
+                int empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
-                    if (board[r + i][c + i] == currentPlayer)
+                    if (board[row + i][col + i] == currentPlayer)
                     {
                         countPlayer++;
                     }
-                    else if (board[r + i][c + i] != EMPTY)
+                    else if (board[row + i][col + i] != EMPTY)
                     {
                         countOpponent++;
                     }
@@ -161,13 +149,10 @@ public:
                         empty++;
                     }
                 }
-
                 score += evaluateChunk(countPlayer, countOpponent, empty);
-                countPlayer = 0;
-                countOpponent = 0;
-                empty = 0;
             }
         }
+
         return score;
     }
     vector<vector<int>> killerMoves;
@@ -183,32 +168,30 @@ private:
      */
     int evaluateChunk(int countPlayer, int countOpponent, int empty)
     {
-
-        if (countPlayer == 4) // winning move
-        {
-            return 10001;
-        }
-        else if (countPlayer == 3 && countOpponent == 0) // three consecutive
-        {
-            return 1000;
-        }
-        else if (countPlayer == 2 && countOpponent == 0) // two consecutive
+        int score = 0;
+        if (countPlayer == 4)
+            return 1000; // Winning move
+        else if (countPlayer == 3 && empty == 1)
         {
             return 100;
         }
-        else if (countOpponent == 2 && countPlayer == 0) // two consecutive of the opponent
+        else if (countPlayer == 2 && empty == 2)
         {
-            return -101;
+            return 10;
         }
-        else if (countOpponent == 3 && countPlayer == 0) // three consecutive of the opponent
+        else if (countOpponent == 2 && empty == 2)
         {
-            return -1001;
+            return -10;
         }
-        else if (countOpponent == 4) // winning move for the opponent
+        else if (countOpponent == 3 && empty == 1)
         {
-            return -10000;
+            return -100;
         }
-        return 0;
+        else if (countOpponent == 4)
+        {
+            return -1000;
+        }
+        return score;
     }
 };
 #endif

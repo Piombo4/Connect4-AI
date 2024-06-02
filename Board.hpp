@@ -1,13 +1,6 @@
 #ifndef BOARD
 #define BOARD
-#include <iostream>
 #include <vector>
-#include <algorithm>
-using namespace std;
-
-const unsigned int NUM_COL = 7;
-const unsigned int NUM_ROW = 6;
-
 enum C : int16_t
 {
     EMPTY = 0,
@@ -17,242 +10,146 @@ enum C : int16_t
 
 class Board
 {
+
 public:
-    vector<vector<int>> board;
-    Board() : board(NUM_ROW, vector<int>(NUM_COL)) {}
-    /*
-     *   Initialize the board
-     */
-    void init_board()
+    static const int NUM_COL = 7; // width of the board
+    static const int NUM_ROW = 6; // height of the board
+
+    Board() : _bitboards{0}, _moves{-1}
     {
-        for (int row = 0; row < NUM_ROW; row++)
-        {
-            for (int col = 0; col < NUM_COL; col++)
-            {
-                board[row][col] = C::EMPTY;
-            }
-        }
+        _counter = 0;
+        std::fill(_col_heights, _col_heights + NUM_COL, 0);
     }
+
     /*
-     *   Draw the board
+     * Draws the board
      */
-    void draw_board()
+    void draw()
     {
-
-        for (int row = 0; row < NUM_ROW; row++)
+        for (int i = NUM_ROW - 1; i >= 0; i--)
         {
-            cout << "|";
-            for (int col = 0; col < NUM_COL; col++)
+            std::cout << "|";
+            for (int j = 0; j < NUM_COL; j++)
             {
-                switch (board[NUM_ROW - row - 1][col])
+                uint64_t pos = UINT64_C(1) << (j * (NUM_ROW + 1) + i);
+                if ((_bitboards[0] & pos) == pos)
                 {
-                case C::EMPTY:
-                    cout << " ";
-                    break;
-                case C::PLAYER:
-                    cout << "\e[33m";
-                    cout << "O";
-                    cout << "\e[0m";
-                    break;
-                case C::AI:
-                    cout << "\e[31m";
-                    cout << "O";
-                    cout << "\e[0m";
-                    break;
-                default:
-                    break;
+                    std::cout << "\e[33m";
+                    std::cout << "O";
+                    std::cout << "\e[0m";
                 }
-                cout << "|";
+                else if ((_bitboards[1] & pos) == pos)
+                {
+                    std::cout << "\e[31m";
+                    std::cout << "O";
+                    std::cout << "\e[0m";
+                }
+                else
+                {
+                    std::cout << " ";
+                }
+                std::cout << "|";
             }
-
-            cout << endl;
+            std::cout << std::endl;
         }
 
         for (int col = 0; col < NUM_COL; col++)
         { // write column numbers
-            cout << " ";
-            cout << col + 1;
+            std::cout << " ";
+            std::cout << col + 1;
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 
+    /**
+     *   Checks whether a move can be played
+     *   @param col - index of column to play
+     *   @return true if the move can be played, false otherwise
+     */
     bool canPlay(int col)
     {
-
-        if (board[NUM_ROW - 1][col] == C::EMPTY)
-        {
-            return true;
-        }
-
-        return false;
+        uint64_t pos = UINT64_C(1) << (NUM_ROW - 1) << col * (NUM_ROW + 1);
+        return ((_bitboards[0] & pos) == 0) && ((_bitboards[1] & pos) == 0);
     }
-    /*
-     *   Add a move to the board
-     *   @param move - the move to add (it represents a column)
-     *   @param currentPlayer - the player who made the move
-     *   @return - the row in which the move was added
+    /**
+     *   Plays a move on the board
+     *   It should not be called without checking if the column is full
+     *   @param col - index of column to play
      */
-    int add_move(int move, int currentPlayer)
+    void makeMove(int col)
     {
-        for (int row = 0; row < NUM_ROW; row++)
-        {
-            if (board[row][move] == C::EMPTY)
-            {
-                board[row][move] = currentPlayer;
-                return row;
-            }
-        }
-        return -1;
+        uint64_t pos = UINT64_C(1) << (col * (NUM_ROW + 1)) + _col_heights[col];
+        _bitboards[_counter & 1] |= _bitboards[_counter & 1] + pos;
+        _col_heights[col]++;
+        _moves[_counter++] = col;
     }
-    /*
-     *   Check whether the current position is a winning position
-     *   @param currentPlayer - the player to check for the win
-     *   @return - true if currentPlayer has won, false otherwise
+    /**
+     *   Undo a move on the board
      */
-    bool winning_move(int currentPlayer)
+    void unmakeMove()
     {
-        int count;
-
-        // check horizontal win
-        for (int row = 0; row < NUM_ROW; row++)
+        int col = _moves[--_counter];
+        uint64_t pos = UINT64_C(1) << (col * (NUM_ROW + 1) + (--_col_heights[col]));
+        _bitboards[_counter & 1] &= ~pos; // Remove the last move from the mask
+    }
+    /**
+     *  Check if an alignment of 4 has been made by the current player
+     *  @return true if an alignment of 4 has been made, false otherwise
+     */
+    bool isWin()
+    {
+        // Since after making a move the counter increases,
+        // I virtually increase it again to get the player who has made the last move
+        uint64_t currentPlayerBB = _bitboards[(_counter + 1) & 1];
+        int directions[] = {1, 7, 6, 8};
+        long bb;
+        for (int dir : directions)
         {
-
-            for (int col = 0; col < NUM_COL - 3; col++)
+            bb = currentPlayerBB & (currentPlayerBB >> dir);
+            if ((bb & (bb >> (2 * dir))) != 0)
             {
-                count = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (board[row][col + i] == currentPlayer)
-                    {
-                        count++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                    if (count == 4)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-        // check vertical win
-        for (int col = 0; col < NUM_COL; col++)
-        {
-
-            for (int row = 0; row < NUM_ROW - 3; row++)
-            {
-                count = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (board[row + i][col] == currentPlayer)
-                    {
-                        count++;
-                    }
-                    else
-                    {
-
-                        break;
-                    }
-                    if (count == 4)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        // check diagonal win
-        for (unsigned int c = 0; c < NUM_COL - 3; c++)
-        {
-            for (unsigned int r = 3; r < NUM_ROW; r++)
-            {
-                count = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (board[r - i][c + i] == currentPlayer)
-                    {
-                        count++;
-                    }
-                    else
-                    {
-
-                        break;
-                    }
-                    if (count == 4)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (unsigned int c = 0; c < NUM_COL - 3; c++)
-        {
-            for (unsigned int r = 0; r < NUM_ROW - 3; r++)
-            {
-                count = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (board[r + i][c + i] == currentPlayer)
-                    {
-                        count++;
-                    }
-                    else
-                    {
-
-                        break;
-                    }
-
-                    if (count == 4)
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
         }
         return false;
     }
-    /*
-     *   Generates all the possible moves from a certain position
-     *   @return - the columns where a piece placement is possible
+    /**
+     *  Check if the current player is the human player.
+     *  This function assumes that the human player starts first.
+     *  Whenever the human player makes a move, the counter becomes an odd number
+     *  @return true if an alignment of 4 has been made, false otherwise
      */
-    vector<int> generateMoves()
+    bool isPlayer()
     {
-        vector<int> possibleMoves;
-        for (int col = 0; col < NUM_COL; col++)
+        return _counter % 2 != 0;
+    }
+    /**
+     *  @return all the playable moves
+     */
+    std::vector<int> generateMoves()
+    {
+        std::vector<int> moves;
+        for (int i = 0; i < NUM_COL; i++)
         {
-            for (int row = 0; row < NUM_ROW; row++)
+            if (canPlay(i))
             {
-                if (board[row][col] == C::EMPTY)
-                {
-                    possibleMoves.push_back(col);
-
-                    break;
-                }
+                moves.push_back(i);
             }
         }
-        return possibleMoves;
+        return moves;
     }
-
-    /*
-     *   @return - the board
+    /**
+     *  @return the number of moves played until now
      */
-    const vector<vector<int>> &getBoard() const
-    {
-        return board;
-    }
-    /*
-     *   Add move in a particular cell
-     *   @param row - the row
-     *   @param col - the column
-     */
-    void undoMove(int row, int col)
-    {
-        board[row][col] = C::EMPTY;
+    int nMoves(){
+        return _counter;
     }
 
 private:
+    uint64_t _bitboards[2];
+    int _col_heights[NUM_COL]; // Track the heights of each column
+    int _moves[NUM_COL * NUM_ROW];
+    int _counter;
 };
 
 #endif

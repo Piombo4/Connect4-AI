@@ -17,7 +17,7 @@ using std::chrono::milliseconds;
 
 using namespace std;
 
-const int MAX_DEPTH = 14;
+const int MAX_DEPTH = 10;
 
 Board board;
 Heuristic heuristic;
@@ -69,6 +69,28 @@ int userMove(Board &board)
     }
     return move - 1;
 }
+
+int aiMove2(Board &board)
+{
+    cout << endl;
+    cout << "AI is thinking...";
+    cout << endl;
+
+    auto t1 = high_resolution_clock::now();
+    pair<int, int> move = engine.negamaxHandler(board, MAX_DEPTH, INT_MIN, INT_MAX, C::AI);
+    auto t2 = high_resolution_clock::now();
+    duration<double, milli> ms_double = t2 - t1;
+
+    // int move = searchMove(board, MAX_DEPTH);
+    cout << endl;
+    cout << "Elaboration speed: " << ms_double.count() << "ms";
+    cout << endl;
+    cout << "Move played: " << move.second + 1 << "\n";
+    cout << "Move score: " << move.first << "\n";
+    cout << endl;
+    return move.second;
+    // return move;
+}
 /*
  * A move made by an AI
  * @return - the column to place the piece
@@ -97,7 +119,7 @@ int aiMove(Board &board)
 /*
  * Starts the game
  */
-void start_game(Board &board)
+void playGame(Board &board)
 {
     cout << "  ____                            _     _____                \n";
     cout << " / ___|___  _ __  _ __   ___  ___| |_  |  ___|__  _   _ _ __ \n";
@@ -126,7 +148,7 @@ void start_game(Board &board)
             cout << endl;
             return;
         }
-        move = currentPlayer == C::PLAYER ? userMove(board) : aiMove(board);
+        move = currentPlayer == C::PLAYER ? userMove(board) : aiMove2(board);
         if (currentPlayer == C::PLAYER)
         {
             outfile << move + 1 << endl;
@@ -155,7 +177,7 @@ void start_game(Board &board)
 int main()
 {
 
-    start_game(board);
+    playGame(board);
     outfile.close();
     cout << endl;
     cout << "END";

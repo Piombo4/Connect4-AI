@@ -44,15 +44,17 @@ public:
         int score = 0;
         int last_column = NUM_COL - 3;
         int last_row = NUM_ROW - 3;
-
+        int countPlayer = 0;
+        int countOpponent = 0;
+        int empty = 0;
         // Horizontal Check
         for (int row = 0; row < NUM_ROW; row++)
         {
             for (int col = 0; col < last_column; col++)
             {
-                int countPlayer = 0;
-                int countOpponent = 0;
-                int empty = 0;
+                countPlayer = 0;
+                countOpponent = 0;
+                empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     if (board[row][col + i] == currentPlayer)
@@ -77,9 +79,9 @@ public:
         {
             for (int row = 0; row < last_row; row++)
             {
-                int countPlayer = 0;
-                int countOpponent = 0;
-                int empty = 0;
+                countPlayer = 0;
+                countOpponent = 0;
+                empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     if (board[row + i][col] == currentPlayer)
@@ -104,9 +106,9 @@ public:
         {
             for (int row = 3; row < NUM_ROW; row++)
             {
-                int countPlayer = 0;
-                int countOpponent = 0;
-                int empty = 0;
+                countPlayer = 0;
+                countOpponent = 0;
+                empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     if (board[row - i][col + i] == currentPlayer)
@@ -131,9 +133,9 @@ public:
         {
             for (int row = 0; row < last_row; row++)
             {
-                int countPlayer = 0;
-                int countOpponent = 0;
-                int empty = 0;
+                countPlayer = 0;
+                countOpponent = 0;
+                empty = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     if (board[row + i][col + i] == currentPlayer)
@@ -170,26 +172,26 @@ private:
     {
         int score = 0;
         if (countPlayer == 4)
-            return 1000; // Winning move
+            return 10000; // Winning move
         else if (countPlayer == 3 && empty == 1)
         {
-            return 100;
+            return 1000;
         }
         else if (countPlayer == 2 && empty == 2)
         {
-            return 10;
+            return 100;
         }
         else if (countOpponent == 2 && empty == 2)
         {
-            return -10;
+            return -100;
         }
         else if (countOpponent == 3 && empty == 1)
         {
-            return -100;
+            return -1000;
         }
         else if (countOpponent == 4)
         {
-            return -1000;
+            return -10000;
         }
         return score;
     }

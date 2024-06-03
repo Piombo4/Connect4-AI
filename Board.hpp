@@ -151,39 +151,31 @@ public:
     }
     int evalBoard()
     {
-        int score = 0;
-        uint64_t currentPlayerBB = _bitboards[(_counter + 1) & 1];
-        uint64_t opponentBB = currentPlayerBB ^ getMask();
+        uint64_t currentPlayerBB = _bitboards[0];
+        uint64_t opponentBB = _bitboards[1];
         int directions[] = {1, 7, 6, 8};
-        long bb1;
-        long bb2;
-        int countPlayer = 0;
-        int countOpponent = 0;
+        int score = 0;
         for (int dir : directions)
         {
             int countPlayer = 0;
             int countOpponent = 0;
             for (int i = 0; i < 4; i++)
             {
-                bb1 = currentPlayerBB & (currentPlayerBB >> dir + i);
-                bb2 = opponentBB & (opponentBB >> dir + i);
-                if (bb1 != 0)
-                {
+                if((currentPlayerBB & (currentPlayerBB >> dir*i)) != 0){
                     countPlayer++;
                 }
-                else if (bb2 != 0)
-                {
+                if((opponentBB & (opponentBB >> dir*i)) != 0){
                     countOpponent++;
                 }
             }
-            score += evaluateChunk(countPlayer, countOpponent);
+            score +=evaluateChunk(countPlayer,countOpponent);
+
         }
         return score;
     }
-    
     int evaluateChunk(int countPlayer, int countOpponent)
     {
-        int score = 0;
+        
         if (countPlayer == 4)
             return 10000; // Winning move
         else if (countPlayer == 3 && countOpponent == 0)
@@ -206,7 +198,7 @@ public:
         {
             return -10000;
         }
-        return score;
+        return 0;
     }
 
 private:

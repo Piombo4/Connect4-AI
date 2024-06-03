@@ -4,7 +4,7 @@
 #include "Board.hpp"
 #include "Engine.hpp"
 
-const int MAX_DEPTH = 14;
+const int MAX_DEPTH = 10;
 Engine engine;
 int userMove(Board &board)
 {
@@ -50,7 +50,7 @@ int aiMove(Board &board, Engine &engine)
     std::cout << std::endl;
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    std::pair<int, int> move = engine.negamaxHandler(board, MAX_DEPTH, INT_MIN, INT_MAX, 1);
+    std::pair<int, int> move = engine.minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, 1);
     auto t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> ms_double = t2 - t1;
 

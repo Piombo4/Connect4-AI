@@ -61,6 +61,8 @@
         "xloctime": "cpp",
         "xmemory": "cpp",
         "xstddef": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "string_view": "cpp",
+        "span": "cpp"
     }
 }

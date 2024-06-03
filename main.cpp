@@ -2,6 +2,10 @@
 #include <chrono>
 #include <iostream>
 #include "Board.hpp"
+#include "Engine.hpp"
+
+const int MAX_DEPTH = 14;
+Engine engine;
 int userMove(Board &board)
 {
     int move;
@@ -39,6 +43,27 @@ int userMove(Board &board)
     }
     return move - 1;
 }
+int aiMove(Board &board, Engine &engine)
+{
+    std::cout << std::endl;
+    std::cout << "AI is thinking...";
+    std::cout << std::endl;
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::pair<int, int> move = engine.negamaxHandler(board, MAX_DEPTH, INT_MIN, INT_MAX, 1);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+
+    // int move = searchMove(board, MAX_DEPTH);
+    std::cout << std::endl;
+    std::cout << "Elaboration speed: " << ms_double.count() << "ms";
+    std::cout << std::endl;
+    std::cout << "Move played: " << move.second + 1 << "\n";
+    std::cout << "Move score: " << move.first << "\n";
+    std::cout << std::endl;
+    return move.second;
+    // return move;
+}
 void playGame(Board &board)
 {
     std::cout << "  ____                            _     _____                \n";
@@ -53,11 +78,10 @@ void playGame(Board &board)
 
     board.draw();
     bool gameOver = false;
-    int currentPlayer = C::PLAYER;
     int turns = 0;
     while (!gameOver)
     {
-        int move = userMove(board);
+        int move = board.nMoves()%2==0 ? userMove(board) : aiMove(board, engine);
         board.makeMove(move);
         board.draw();
         gameOver = board.isWin();
@@ -73,6 +97,7 @@ void playGame(Board &board)
 }
 int main(int argc, char *argv[])
 {
+
     Board board;
     playGame(board);
 

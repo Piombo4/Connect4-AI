@@ -145,25 +145,68 @@ public:
     {
         return _counter;
     }
+    uint64_t getMask()
+    {
+        return _bitboards[0] | _bitboards[1];
+    }
     int evalBoard()
     {
         int score = 0;
         uint64_t currentPlayerBB = _bitboards[(_counter + 1) & 1];
+        uint64_t opponentBB = currentPlayerBB ^ getMask();
         int directions[] = {1, 7, 6, 8};
-        long bb;
+        long bb1;
+        long bb2;
+        int countPlayer = 0;
+        int countOpponent = 0;
         for (int dir : directions)
         {
-            bb = currentPlayerBB & (currentPlayerBB >> dir);
-            if ((bb & (bb >> (2 * dir))) != 0)
+            int countPlayer = 0;
+            int countOpponent = 0;
+            for (int i = 0; i < 4; i++)
             {
-                return true;
+                bb1 = currentPlayerBB & (currentPlayerBB >> dir + i);
+                bb2 = opponentBB & (opponentBB >> dir + i);
+                if (bb1 != 0)
+                {
+                    countPlayer++;
+                }
+                else if (bb2 != 0)
+                {
+                    countOpponent++;
+                }
             }
+            score += evaluateChunk(countPlayer, countOpponent);
         }
-        return false;
+        return score;
     }
-    uint64_t getMask()
+    
+    int evaluateChunk(int countPlayer, int countOpponent)
     {
-        return _bitboards[0] | _bitboards[1];
+        int score = 0;
+        if (countPlayer == 4)
+            return 10000; // Winning move
+        else if (countPlayer == 3 && countOpponent == 0)
+        {
+            return 1000;
+        }
+        else if (countPlayer == 2 && countOpponent == 0)
+        {
+            return 100;
+        }
+        else if (countOpponent == 2 && countPlayer == 0)
+        {
+            return -100;
+        }
+        else if (countOpponent == 3 && countPlayer == 0)
+        {
+            return -1000;
+        }
+        else if (countOpponent == 4)
+        {
+            return -10000;
+        }
+        return score;
     }
 
 private:

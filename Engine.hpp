@@ -3,17 +3,28 @@
 class Engine
 {
 public:
+    Engine()
+    {
+        nodeCount = 0;
+    }
     std::pair<int, int> negamaxHandler(Board &board, int depth, int alpha, int beta, int color)
     {
         int bestValue = INT_MIN;
         int bestMove = -1;
         std::vector<int> moves = board.generateMoves();
+        for(int m : moves){
+            std::cout << m << " ";
+        }
+        std::cout <<std::endl;
         for (int move : moves)
         {
             board.makeMove(move);
             int value = -negamax(board, depth - 1, -beta, -alpha, -color);
             board.unmakeMove();
-            bestValue = std::max(bestValue, value);
+            if(value > bestValue){
+                bestValue = value;
+                bestMove = move;
+            }
             alpha = std::max(alpha, bestValue);
             if (alpha >= beta)
             {
@@ -32,7 +43,7 @@ private:
 
         if (depth == 0)
         {
-            // return board evaluation
+            return board.evalBoard();
         }
         else if (board.nMoves() == Board::NUM_COL * Board::NUM_ROW) // check for draw game
         {

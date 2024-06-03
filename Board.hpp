@@ -141,8 +141,29 @@ public:
     /**
      *  @return the number of moves played until now
      */
-    int nMoves(){
+    int nMoves()
+    {
         return _counter;
+    }
+    int evalBoard()
+    {
+        int score = 0;
+        uint64_t currentPlayerBB = _bitboards[(_counter + 1) & 1];
+        int directions[] = {1, 7, 6, 8};
+        long bb;
+        for (int dir : directions)
+        {
+            bb = currentPlayerBB & (currentPlayerBB >> dir);
+            if ((bb & (bb >> (2 * dir))) != 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    uint64_t getMask()
+    {
+        return _bitboards[0] | _bitboards[1];
     }
 
 private:

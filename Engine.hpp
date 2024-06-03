@@ -1,9 +1,9 @@
 #include "Board.hpp"
-
+#include <iostream>
 class Engine
 {
 public:
-    std::pair<int, int> negamaxHandler()
+    std::pair<int, int> negamaxHandler(Board &board, int depth, int alpha, int beta, int color)
     {
         int bestValue = INT_MIN;
         int bestMove = -1;
@@ -20,6 +20,7 @@ public:
                 break;
             }
         }
+        return {bestValue, bestMove};
     }
 
 private:

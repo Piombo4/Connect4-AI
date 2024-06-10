@@ -1,39 +1,36 @@
-#include "Board.hpp"
+#ifndef ENGINE
+#define ENGINE
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include "Board.hpp"
+#include "Heuristic.hpp"
+
+using namespace std;
 class Engine
 {
-public:
-    Engine()
-    {
-        nodeCount = 0;
-    }
-    std::pair<int, int> negamaxHandler(Board &board, int depth, int alpha, int beta, int color)
-    {
-        int bestValue = INT_MIN;
-        int bestMove = -1;
-        std::vector<int> moves = board.generateMoves();
-        for (int move : moves)
-        {
-            board.makeMove(move);
-            int value = -negamax(board, depth - 1, -beta, -alpha, -color);
-            board.unmakeMove();
-            if (value > bestValue)
-            {
-                bestValue = value;
-                bestMove = move;
-            }
-            alpha = std::max(alpha, bestValue);
-            if (alpha >= beta)
-            {
-                break;
-            }
-        }
-        return {bestValue, bestMove};
-    }
-    std::pair<int, int> minimax(Board &board, int depth, int alpha, int beta, int currentPlayer)
-    {
+private:
+    Heuristic heuristic;
 
-        /*for (int slot = 0; slot < heuristic.killerMoves[depth].size(); slot++)
+    vector<int> orderedMoves;
+
+public:
+    Engine(Heuristic h) : heuristic(h) {}
+
+    /*
+     * Applies the minimax algorithm with alpha-beta pruning to determine the best move.
+     * @param board - the current board
+     * @param depth - the current depth of the search tree
+     * @param alpha - the best value that the maximizer can guarantee at the current level or above
+     * @param beta  - the best value that the minimizer can guarantee at the current level or above
+     * @param currentPlayer - the player whose move is being considered
+     * @return - a pair of integers where the first element is the score of the board for the current player,
+     *           and the second element is the best move's position on the board.
+     */
+    pair<int, int> minimax(Board &board, int depth, int alpha, int beta, int currentPlayer)
+    {
+        vector<int> moves = board.generate_moves();
+        for (int slot = 0; slot < heuristic.killerMoves[depth].size(); slot++)
         {
             int killerMove = heuristic.killerMoves[depth][slot];
 
@@ -46,98 +43,74 @@ public:
                     break;
                 }
             }
-        }*/
+        }
         if (depth == 0)
         {
-            return {board.evalBoard(), -1};
+            return {board.evaluateBoard(currentPlayer), -1};
         }
-        else if (board.nMoves() == Board::NUM_COL * Board::NUM_ROW) // check for draw game
+        else if (board.n_moves() == Board::NUM_COL * Board::NUM_ROW)
         {
             return {0, -1};
         }
-        std::vector<int> moves = board.generateMoves();
+
         if (currentPlayer == C::AI)
         {
-            std::pair<int, int> bestScore = {INT_MIN, -1};
+            pair<int, int> bestScore = {INT_MIN, -1};
 
             for (int col : moves)
             {
-
-                board.makeMove(col);
-                int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
-                if (currentScore > bestScore.first)
+                if (board.can_play(col))
                 {
-                    bestScore = {currentScore, col};
-                }
-                alpha = std::max(alpha, bestScore.first);
+                    int row = board.make_move(col, currentPlayer);
+                    int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
 
-                board.unmakeMove();
+                    if (currentScore > bestScore.first)
+                    {
+                        bestScore = {currentScore, col};
+                    }
+                    alpha = max(alpha, bestScore.first);
 
-                if (alpha >= beta)
-                {
-                    // heuristic.store_killer_moves(col, depth);
-                    break;
+                    board.unmake_move(row, col);
+
+                    if (alpha >= beta)
+                    {
+                        heuristic.store_killer_moves(col, depth);
+                        break;
+                    }
                 }
             }
             return bestScore;
         }
         else
         {
-            std::pair<int, int> bestScore = {INT_MAX, -1};
+            pair<int, int> bestScore = {INT_MAX, -1};
+
             for (int col : moves)
             {
-
-                board.makeMove(col);
-                int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
-
-                if (currentScore < bestScore.first)
+                if (board.can_play(col))
                 {
-                    bestScore = {currentScore, col};
-                }
-                beta = std::min(beta, bestScore.first);
+                    int row = board.make_move(col, currentPlayer);
+                    int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
 
-                board.unmakeMove();
+                    if (currentScore < bestScore.first)
+                    {
+                        bestScore = {currentScore, col};
+                    }
+                    beta = min(beta, bestScore.first);
 
-                if (alpha >= beta)
-                {
-                    // heuristic.store_killer_moves(col, depth);
-                    break;
+                    board.unmake_move(row, col);
+
+                    if (alpha >= beta)
+                    {
+
+                        heuristic.store_killer_moves(col, depth);
+                        break;
+                    }
                 }
             }
             return bestScore;
         }
     }
-
-private:
-    unsigned long long nodeCount;    // counter of explored nodes.
-    int columnOrder[Board::NUM_COL]; // column exploration order
-    int negamax(Board &board, int depth, int alpha, int beta, int color)
-    {
-        nodeCount++;
-
-        if (depth == 0)
-        {
-            return color * board.evalBoard();
-        }
-        else if (board.nMoves() == Board::NUM_COL * Board::NUM_ROW) //check for draw game
-        {
-            return 0;
-        }
-
-        int bestValue = INT_MIN;
-        std::vector<int> moves = board.generateMoves();
-        for (int move : moves)
-        {
-            board.makeMove(move);
-            int value = -negamax(board, depth - 1, -beta, -alpha, -color);
-            board.unmakeMove();
-            bestValue = std::max(bestValue, value);
-            alpha = std::max(alpha, bestValue);
-            if (alpha >= beta)
-            {
-                break;
-            }
-        }
-        return bestValue;
-    }
 };
+
+#endif

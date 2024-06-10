@@ -3,12 +3,13 @@
 #include <fstream>
 #include <windows.h>
 #include <algorithm>
+#include <sstream>
+#include <string>
 #include <chrono>
 #include "Board.hpp"
 #include "Engine.hpp"
 #include "Heuristic.hpp"
 using std::chrono::duration;
-using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
 
@@ -17,7 +18,7 @@ using std::chrono::milliseconds;
 
 using namespace std;
 
-const int MAX_DEPTH = 12;
+int MAX_DEPTH = 1;
 
 Board board;
 Heuristic heuristic;
@@ -56,7 +57,7 @@ int userMove(Board &board)
 
             cout << "Please insert a number between 1 and 7";
         }
-        else if (!board.can_play(move-1)) // column full
+        else if (!board.can_play(move - 1)) // column full
         {
             cout << "Column full!";
         }
@@ -153,9 +154,32 @@ void playGame(Board &board)
     }
 }
 
-int main(int argc, char* argv[])
+bool isInteger(char *s)
 {
-    
+    std::istringstream iss(s);
+    int x;
+    // Try to convert the string to an integer
+    return (iss >> x) && (iss.eof());
+}
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
+        cout << "usage: ./compiledFile depth" << endl;
+        return -1;
+    }
+    else
+    {
+        if (!isInteger(argv[1]))
+        {
+            cout << "usage: ./compiledFile depth" << endl;
+            return -1;
+        }
+        else
+        {
+            MAX_DEPTH = atoi(argv[1]);
+        }
+    }
     playGame(board);
     outfile.close();
     cout << endl;

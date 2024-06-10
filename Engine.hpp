@@ -11,13 +11,11 @@ class Engine
 {
 private:
     Heuristic heuristic;
-
     vector<int> orderedMoves;
 
 public:
     Engine(Heuristic h) : heuristic(h) {}
-
-    /*
+    /** 
      * Applies the minimax algorithm with alpha-beta pruning to determine the best move.
      * @param board - the current board
      * @param depth - the current depth of the search tree

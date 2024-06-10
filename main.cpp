@@ -8,7 +8,7 @@
 #include <chrono>
 #include "Board.hpp"
 #include "Engine.hpp"
-#include "Heuristic.hpp"
+#include "KillerMoves.hpp"
 using std::chrono::duration;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
@@ -21,8 +21,8 @@ using namespace std;
 int MAX_DEPTH = 1;
 
 Board board;
-Heuristic heuristic;
-Engine engine = Engine(heuristic);
+KillerMoves killerMovesPlaceholder;
+Engine engine = Engine(killerMovesPlaceholder);
 bool gameOver;
 int currentPlayer;
 int turns;

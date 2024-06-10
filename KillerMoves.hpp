@@ -1,15 +1,15 @@
-#ifndef HEURISTIC
-#define HEURISTIC
+#ifndef KILLERMOVES
+#define KILLERMOVES
 #include "Board.hpp"
 
 class Board;
 using namespace std;
 const int KILLER_MOVES_SLOTS = 2;
 const int KILLER_DEPTH = 18;
-class Heuristic
+class KillerMoves
 {
 public:
-    Heuristic() : killerMoves(KILLER_DEPTH, vector<int>(KILLER_MOVES_SLOTS)) {}
+    KillerMoves() : killerMoves(KILLER_DEPTH, vector<int>(KILLER_MOVES_SLOTS)) {}
 
     void store_killer_moves(int move, int depth)
     {

@@ -4,18 +4,18 @@
 #include <vector>
 #include <algorithm>
 #include "Board.hpp"
-#include "Heuristic.hpp"
+#include "KillerMoves.hpp"
 
 using namespace std;
 class Engine
 {
 private:
-    Heuristic heuristic;
+    KillerMoves killerMovesPlaceholder;
     vector<int> orderedMoves;
 
 public:
-    Engine(Heuristic h) : heuristic(h) {}
-    /** 
+    Engine(KillerMoves h) : killerMovesPlaceholder(h) {}
+    /**
      * Applies the minimax algorithm with alpha-beta pruning to determine the best move.
      * @param board - the current board
      * @param depth - the current depth of the search tree
@@ -28,9 +28,9 @@ public:
     pair<int, int> minimax(Board &board, int depth, int alpha, int beta, int currentPlayer)
     {
         vector<int> moves = board.generate_moves();
-        for (int slot = 0; slot < heuristic.killerMoves[depth].size(); slot++)
+        for (int slot = 0; slot < killerMovesPlaceholder.killerMoves[depth].size(); slot++)
         {
-            int killerMove = heuristic.killerMoves[depth][slot];
+            int killerMove = killerMovesPlaceholder.killerMoves[depth][slot];
 
             for (int i = 0; i < moves.size(); i++)
             {
@@ -72,7 +72,7 @@ public:
 
                     if (alpha >= beta)
                     {
-                        heuristic.store_killer_moves(col, depth);
+                        killerMovesPlaceholder.store_killer_moves(col, depth);
                         break;
                     }
                 }
@@ -101,7 +101,7 @@ public:
                     if (alpha >= beta)
                     {
 
-                        heuristic.store_killer_moves(col, depth);
+                        killerMovesPlaceholder.store_killer_moves(col, depth);
                         break;
                     }
                 }

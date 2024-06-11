@@ -115,12 +115,11 @@ void playGame(Board &board, Engine &engine)
     board.draw_board();
     // player starts
     currentPlayer = C::PLAYER;
-    turns = 0;
     int move = -1;
 
     while (!gameOver)
     {
-        if (turns == NUM_COL * NUM_ROW)
+        if (board.n_moves() == Board::NUM_COL * Board::NUM_ROW)
         {
             cout << "Draw!";
             cout << endl;
@@ -137,7 +136,6 @@ void playGame(Board &board, Engine &engine)
         if (!gameOver)
         {
             currentPlayer = (currentPlayer == C::PLAYER) ? AI : C::PLAYER;
-            turns++;
         }
     }
     if (currentPlayer == C::PLAYER)
@@ -163,14 +161,14 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        cout << "usage: ./compiledFile depth" << endl;
+        cout << "usage: ./cf depth" << endl;
         return -1;
     }
     else
     {
         if (!isInteger(argv[1]))
         {
-            cout << "usage: ./compiledFile depth" << endl;
+            cout << "usage: ./cf depth" << endl;
             return -1;
         }
         else
@@ -181,7 +179,7 @@ int main(int argc, char *argv[])
     Board board;
     KillerMoves killerMovesPlaceholder;
     Engine engine = Engine(killerMovesPlaceholder);
-    playGame(board,engine);
+    playGame(board, engine);
     outfile.close();
     cout << endl;
     cout << "\nGame Over\n";

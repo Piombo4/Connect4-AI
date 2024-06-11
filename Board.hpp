@@ -79,7 +79,7 @@ public:
     }
     /**
      *   Checks if a move is playable i.e. if the column is not full
-     *   @param col - the column to play the move
+     *   @param col the column to play the move
      *   @return true if the column is playable, false otherwise
      */
     bool can_play(int col)
@@ -94,8 +94,8 @@ public:
     }
     /**
      *   Adds a move to the board
-     *   @param move - the move to add (it represents a column)
-     *   @param currentPlayer - the player who made the move
+     *   @param move the move to add (it represents a column)
+     *   @param currentPlayer the player who made the move
      *   @return - the row in which the move was added
      */
     int make_move(int move, int currentPlayer)
@@ -113,7 +113,7 @@ public:
     }
     /**
      *   Checks whether the current position is a winning position
-     *   @param currentPlayer - the player to check for the win
+     *   @param currentPlayer the player to check for the win
      *   @return - true if currentPlayer has won, false otherwise
      */
     bool has_won(int currentPlayer)
@@ -251,7 +251,7 @@ public:
      *   Evaluates the board positions for the currentPlayer.
      *   It counts how many pieces in a row the currentPlayer has in the four directions (horizontal, vertical, diagonal, antidiagonal) and gives a score based on that.
      *   Then it subtracts the score of the opponent (calculated in the same way) and returns the remaining value.
-     *   @param currentPlayer - the current player
+     *   @param currentPlayer the current player
      *   @return a score based on the board position.
      */
     int evaluateBoard(int currentPlayer)

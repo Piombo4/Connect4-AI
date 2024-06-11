@@ -56,7 +56,7 @@ public:
         }
         else if (board.has_won(C::PLAYER))
         {
-            return {depth-100000, -1};
+            return {-(100000+depth), -1};
         }
 
         if (isMaximizing)

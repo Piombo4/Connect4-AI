@@ -21,7 +21,7 @@ public:
     static const int NUM_COL = 7; // width of the board
     static const int NUM_ROW = 6; // height of the board
 
-    Board() : board(NUM_ROW, vector<int>(NUM_COL)) { _counter = 0;}
+    Board() : board(NUM_ROW, vector<int>(NUM_COL)) { _counter = 0; }
     /*
      *   Initializes the board
      */
@@ -116,7 +116,7 @@ public:
      *   @param currentPlayer - the player to check for the win
      *   @return - true if currentPlayer has won, false otherwise
      */
-    bool winning_move(int currentPlayer)
+    bool has_won(int currentPlayer)
     {
         int count;
 
@@ -241,9 +241,10 @@ public:
     }
 
     /**
-     *   @return the number of moves played until now 
+     *   @return the number of moves played until now
      */
-    int n_moves(){
+    int n_moves()
+    {
         return _counter;
     }
     /**
@@ -375,10 +376,8 @@ public:
 private:
     int evaluateChunk(int countPlayer, int countOpponent, int empty)
     {
-        int score = 0;
-        if (countPlayer == 4)
-            return 20000; // Winning move
-        else if (countPlayer == 3 && empty == 1)
+
+        if (countPlayer == 3 && empty == 1)
         {
             return 1000;
         }
@@ -394,11 +393,7 @@ private:
         {
             return -2000;
         }
-        else if (countOpponent == 4)
-        {
-            return -10000;
-        }
-        return score;
+        return 0;
     }
     vector<vector<int>> board;
     vector<int> possibleMoves = {4, 3, 5, 2, 1, 6, 0};

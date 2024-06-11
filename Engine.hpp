@@ -21,11 +21,11 @@ public:
      * @param depth - the current depth of the search tree
      * @param alpha - the best value that the maximizer can guarantee at the current level or above
      * @param beta  - the best value that the minimizer can guarantee at the current level or above
-     * @param currentPlayer - the player whose move is being considered
+     * @param isMaximizing - true if it's AI turn, false otherwise
      * @return - a pair of integers where the first element is the score of the board for the current player,
      *           and the second element is the best move's position on the board.
      */
-    pair<int, int> minimax(Board &board, int depth, int alpha, int beta, int currentPlayer)
+    pair<int, int> minimax(Board &board, int depth, int alpha, int beta, bool isMaximizing)
     {
         vector<int> moves = board.generate_moves();
         for (int slot = 0; slot < killerMovesPlaceholder.killerMoves[depth].size(); slot++)
@@ -44,14 +44,22 @@ public:
         }
         if (depth == 0)
         {
-            return {board.evaluateBoard(currentPlayer), -1};
+            return {board.evaluateBoard(C::AI), -1};
         }
         else if (board.n_moves() == Board::NUM_COL * Board::NUM_ROW)
         {
             return {0, -1};
         }
+        else if (board.has_won(C::AI))
+        {
+            return {10000-depth, -1};
+        }
+        else if (board.has_won(C::PLAYER))
+        {
+            return {depth-10000, -1};
+        }
 
-        if (currentPlayer == C::AI)
+        if (isMaximizing)
         {
             pair<int, int> bestScore = {INT_MIN, -1};
 
@@ -59,8 +67,9 @@ public:
             {
                 if (board.can_play(col))
                 {
-                    int row = board.make_move(col, currentPlayer);
-                    int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
+
+                    int row = board.make_move(col, isMaximizing ? C::AI : C::PLAYER);
+                    int currentScore = minimax(board, depth - 1, alpha, beta, false).first;
 
                     if (currentScore > bestScore.first)
                     {
@@ -87,8 +96,8 @@ public:
             {
                 if (board.can_play(col))
                 {
-                    int row = board.make_move(col, currentPlayer);
-                    int currentScore = minimax(board, depth - 1, alpha, beta, -currentPlayer).first;
+                    int row = board.make_move(col, isMaximizing ? C::AI : C::PLAYER);
+                    int currentScore = minimax(board, depth - 1, alpha, beta, true).first;
 
                     if (currentScore < bestScore.first)
                     {

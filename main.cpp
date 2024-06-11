@@ -20,9 +20,6 @@ using namespace std;
 
 int MAX_DEPTH = 1;
 
-Board board;
-KillerMoves killerMovesPlaceholder;
-Engine engine = Engine(killerMovesPlaceholder);
 bool gameOver;
 int currentPlayer;
 int turns;
@@ -31,6 +28,7 @@ ofstream outfile("moves.txt");
 
 /**
  * A move made by a human player
+ * @param board the board
  * @return - the column to place the piece
  */
 int userMove(Board &board)
@@ -75,14 +73,14 @@ int userMove(Board &board)
  * A move made by an AI
  * @return - the column to place the piece
  */
-int aiMove(Board &board)
+int aiMove(Board &board, Engine &engine)
 {
     cout << endl;
     cout << "AI is thinking...";
     cout << endl;
 
     auto t1 = high_resolution_clock::now();
-    pair<int, int> move = engine.minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, C::AI);
+    pair<int, int> move = engine.minimax(board, MAX_DEPTH, INT_MIN, INT_MAX, true);
     auto t2 = high_resolution_clock::now();
     duration<double, milli> ms_double = t2 - t1;
 
@@ -99,7 +97,7 @@ int aiMove(Board &board)
 /**
  * Starts the game
  */
-void playGame(Board &board)
+void playGame(Board &board, Engine &engine)
 {
     cout << "  ____                            _     _____                \n";
     cout << " / ___|___  _ __  _ __   ___  ___| |_  |  ___|__  _   _ _ __ \n";
@@ -128,14 +126,14 @@ void playGame(Board &board)
             cout << endl;
             return;
         }
-        move = currentPlayer == C::PLAYER ? userMove(board) : aiMove(board);
+        move = currentPlayer == C::PLAYER ? userMove(board) : aiMove(board, engine);
         if (currentPlayer == C::PLAYER)
         {
             outfile << move + 1 << endl;
         }
         board.make_move(move, currentPlayer);
         board.draw_board();
-        gameOver = board.winning_move(currentPlayer);
+        gameOver = board.has_won(currentPlayer);
         if (!gameOver)
         {
             currentPlayer = (currentPlayer == C::PLAYER) ? AI : C::PLAYER;
@@ -180,7 +178,10 @@ int main(int argc, char *argv[])
             MAX_DEPTH = atoi(argv[1]);
         }
     }
-    playGame(board);
+    Board board;
+    KillerMoves killerMovesPlaceholder;
+    Engine engine = Engine(killerMovesPlaceholder);
+    playGame(board,engine);
     outfile.close();
     cout << endl;
     cout << "\nGame Over\n";

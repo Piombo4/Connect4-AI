@@ -52,11 +52,11 @@ public:
         }
         else if (board.has_won(C::AI))
         {
-            return {10000-depth, -1};
+            return {100000+depth, -1};
         }
         else if (board.has_won(C::PLAYER))
         {
-            return {depth-10000, -1};
+            return {depth-100000, -1};
         }
 
         if (isMaximizing)

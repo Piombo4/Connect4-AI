@@ -19,12 +19,17 @@ Where ```<depth>``` specifies the depth for minimax.
 ##
 
 ## Project structure
+ ```
 connect4-ai/
 │
-├───.vscode
-└───src
-└─── main.cpp
-
+├── src/
+│   ├── Board.hpp         
+│   ├── Engine.hpp      
+│   ├── KillerMoves.hpp         
+│
+├── main.cpp    
+└── README.md            
+ ```
 
 
  

@@ -6,11 +6,12 @@ C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
 connect4-ai/
 │
 ├── src/
-│   ├── Board.hpp         
-│   ├── Engine.hpp      
-│   ├── KillerMoves.hpp         
+│   ├── Board.hpp               # The board  
+│   ├── Engine.hpp              # Minimax implementation       
+│   ├── KillerMoves.hpp         # Utility class to work with killer moves               
 │
-├── main.cpp    
+├── main.cpp                    # main
+├── LICENSE
 └── README.md            
  ```
 

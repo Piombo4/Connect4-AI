@@ -4,6 +4,7 @@ C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
 ## Compilation and Execution
 Compilation:
  ```$ g++ main.cpp -o <name>```
+ </br>
 Execution:
   ```$ ./<name> <depth>```
 <depth> specifies the depth for minimax.

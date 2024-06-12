@@ -5,7 +5,6 @@ C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
  ```
 connect4-AI/
 │
-│
 ├── img/
 │   ├── gameplay.png
 │

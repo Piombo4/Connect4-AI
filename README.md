@@ -1,4 +1,4 @@
-# Connect4 AI
+![image](https://github.com/Piombo4/Connect4-AI/assets/81918998/2dd7ff90-9a14-49e0-93c5-bb2ed918fc42)# Connect4 AI
 C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
 
 ## Project structure
@@ -44,6 +44,12 @@ Then it subtracts the score of the opponent (calculated in the same way) and ret
 | 0             | 3               | 1           | -2000             |
 | 0             | 4               | 0           | -(100000 + depth) |
 ```
+## Performance and Optimizations
+On my Ryzen 5 3600XT at depth 16 the longest elaboration time was around 70 seconds while average elaboration time is 8 seconds.
+</br>
+To increase the speed of the algorithm and allow it do go further I used Alpha-beta pruning and killer moves. 
+Other optimizations could be achieved using a bitboard, a transpostion table and/or iterative deepening.  
+## Gameplay Image
 
 
  

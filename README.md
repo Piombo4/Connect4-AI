@@ -1,6 +1,19 @@
 # Connect4 AI
 C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
 
+## Project structure
+ ```
+connect4-ai/
+│
+├── src/
+│   ├── Board.hpp         
+│   ├── Engine.hpp      
+│   ├── KillerMoves.hpp         
+│
+├── main.cpp    
+└── README.md            
+ ```
+
 ## Compilation and Execution
 Compilation:
 </br>
@@ -30,18 +43,6 @@ Then it subtracts the score of the opponent (calculated in the same way) and ret
 | 0             | 3               | 1           | -2000             |
 | 0             | 4               | 0           | -(100000 + depth) |
 ```
-## Project structure
- ```
-connect4-ai/
-│
-├── src/
-│   ├── Board.hpp         
-│   ├── Engine.hpp      
-│   ├── KillerMoves.hpp         
-│
-├── main.cpp    
-└── README.md            
- ```
 
 
  

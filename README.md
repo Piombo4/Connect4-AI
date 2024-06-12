@@ -21,14 +21,14 @@ To estimate the value of a particular board position, the evaluation function co
 Then it subtracts the score of the opponent (calculated in the same way) and returns the remaining value.
 </br>
 ```
-| Player pieces | Opponent Pieces | Empty Spots | Score           |
-|---------------|-----------------|-------------|-----------------|
-| 4             | 0               | 0           | 100000+depth    |
-| 3             | 0               | 1           | 1000            |
-| 2             | 0               | 2           | 100             |
-| 0             | 2               | 2           | -100            |
-| 0             | 3               | 1           | -2000           |
-| 0             | 4               | 0           | -(100000+depth) |
+| Player pieces | Opponent Pieces | Empty Spots | Score             |
+|---------------|-----------------|-------------|-------------------|
+| 4             | 0               | 0           | 100000 + depth    |
+| 3             | 0               | 1           | 1000              |
+| 2             | 0               | 2           | 100               |
+| 0             | 2               | 2           | -100              |
+| 0             | 3               | 1           | -2000             |
+| 0             | 4               | 0           | -(100000 + depth) |
 ```
 ## Project structure
  ```

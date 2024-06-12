@@ -9,7 +9,7 @@ Execution:
 <depth> specifies the depth for minimax.
 
 ## Project structure
-connect4-ai-minimax/
+connect4-ai/
 │
 ├── src/
 │   ├── Board.hpp          # Logica del gioco Connect4

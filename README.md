@@ -1,4 +1,4 @@
-![image](https://github.com/Piombo4/Connect4-AI/assets/81918998/2dd7ff90-9a14-49e0-93c5-bb2ed918fc42)# Connect4 AI
+# Connect4 AI
 C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
 
 ## Project structure

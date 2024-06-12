@@ -14,7 +14,7 @@ Execution:
   ```$ ./<name> <depth>```
 </br>
 </br>
-Where <depth> specifies the depth for minimax.
+Where ```<depth>``` specifies the depth for minimax.
 
 ##
 

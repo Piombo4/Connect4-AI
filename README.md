@@ -3,7 +3,7 @@ C++ implementation of Connect 4 using Minimax with Alpha-beta pruning.
 
 ## Project structure
  ```
-connect4-ai/
+connect4-AI/
 │
 ├── src/
 │   ├── Board.hpp               # The board  

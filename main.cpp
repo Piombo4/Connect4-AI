@@ -23,9 +23,8 @@ int MAX_DEPTH = 1;
 bool gameOver;
 int currentPlayer;
 int turns;
-
-ofstream outfile("moves.txt");
-
+float sum;
+int aiMoves;
 /**
  * A move made by a human player
  * @param board the board
@@ -91,6 +90,8 @@ int aiMove(Board &board, Engine &engine)
     cout << "Move played: " << move.second + 1 << "\n";
     cout << "Move score: " << move.first << "\n";
     cout << endl;
+    sum += ms_double.count();
+    aiMoves++;
     return move.second;
     // return move;
 }
@@ -126,10 +127,6 @@ void playGame(Board &board, Engine &engine)
             return;
         }
         move = currentPlayer == C::PLAYER ? userMove(board) : aiMove(board, engine);
-        if (currentPlayer == C::PLAYER)
-        {
-            outfile << move + 1 << endl;
-        }
         board.make_move(move, currentPlayer);
         board.draw_board();
         gameOver = board.has_won(currentPlayer);
@@ -176,11 +173,15 @@ int main(int argc, char *argv[])
             MAX_DEPTH = atoi(argv[1]);
         }
     }
+    aiMoves = 0;
+    sum = 0;
     Board board;
     KillerMoves killerMovesPlaceholder;
     Engine engine = Engine(killerMovesPlaceholder);
     playGame(board, engine);
-    outfile.close();
+    cout << endl;
+    cout << "Average elaboration speed: " << sum / aiMoves << "ms";
+    cout << endl;
     cout << endl;
     cout << "\nGame Over\n";
     return 0;

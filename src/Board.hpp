@@ -396,7 +396,7 @@ private:
         return 0;
     }
     vector<vector<int>> board;
-    vector<int> possibleMoves = {4, 3, 5, 2, 1, 6, 0};
+    vector<int> possibleMoves = {4, 3, 5, 2, 1, 6, 0};  //Basic move ordering hardcoded, center columns are usually the best
     int _counter;
 };
 

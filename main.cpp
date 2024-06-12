@@ -6,9 +6,9 @@
 #include <sstream>
 #include <string>
 #include <chrono>
-#include "Board.hpp"
-#include "Engine.hpp"
-#include "KillerMoves.hpp"
+#include "src/Board.hpp"
+#include "src/Engine.hpp"
+#include "src/KillerMoves.hpp"
 using std::chrono::duration;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;

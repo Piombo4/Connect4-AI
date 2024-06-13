@@ -50,7 +50,7 @@ Then it subtracts the score of the opponent (calculated in the same way) and ret
 ## Performance and Optimizations
 On my Ryzen 5 3600XT at depth 16 the longest elaboration time was around 70 seconds while average elaboration time is 8 seconds.
 </br>
-To increase the speed of the algorithm and allow it do go further I used Alpha-beta pruning and killer moves. 
+To increase the speed of the algorithm and allow it to go deeper I used Alpha-beta pruning and killer moves. 
 Other optimizations could be achieved using a bitboard, a transpostion table and/or iterative deepening.  
 ## Gameplay Image
 ![Gameplay](/img/gameplay.png)
